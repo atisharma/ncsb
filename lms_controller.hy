@@ -71,9 +71,9 @@ Control LMS by the json RPC interface.
  (get-in (.send server ["-" ["version" "?"]]) "_version"))
 
 
-(defn status [server mac]
+(defn status [server mac &kwonly [from 0] [to 50]]
  "Return detailed status of a player's playlist."
- (.send server [mac ["status" 0 50 "tags:a,l,c,d,e,s,t,j,J,K,L,x,N,r,o"]]))
+ (.send server [mac ["status" from to "tags:a,l,c,d,e,s,t,j,J,K,L,x,N,r,o"]]))
 
 (defn mode [server mac]
  "Return player mode."

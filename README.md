@@ -3,8 +3,11 @@
 
 ## todo
 
-0. command-line specify server-ip and port
-1. detailed track info
-2. playlist move up/down
-3. album art
-4. keys / help info display
+- command-line specify server-ip and port
+- handle playlist too long to show
+- detailed track info
+- playlist move up/down
+- album art
+- standard packaging
+- vim-style commands
+- colour themes

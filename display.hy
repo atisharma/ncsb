@@ -1,8 +1,10 @@
 """
 Display panes for the LMS browser.
 
-▶️ ⏸️ ⏯️ ◀️ ⏹️ ⏪️ ⏩️ ⏮️ ⏏️ 🔀️ 🔁️ 🔃️ 🔂️ ℹ️ 🔄️ ⏻ ⏼ ⏽ ⭘ ⏾ 🔊 
 """
+
+; some useful unicode symbols
+"▶️ ⏸️ ⏯️ ◀️ ⏹️ ⏪️ ⏩️ ⏮️ ⏏️ 🔀️ 🔁️ 🔃️ 🔂️ ℹ️ 🔄️ ⏻ ⏼ ⏽ ⭘ ⏾ 🔊"
 
 (import curses)
 
@@ -31,8 +33,8 @@ Display panes for the LMS browser.
   (.put scr (+ y main-panel-y) main-panel-x "•" :col (if (get p "connected") 3 2))
   (.put scr (+ y main-panel-y) (+ 2 main-panel-x) "⏻" :col (if (get p "power") 3 2))
   (.put scr (+ y main-panel-y) (+ 4 main-panel-x) (if (get p "isplaying") "▶️ " "⏹️ ") :col (if (get p "isplaying") 3 2))
-  (.put scr (+ y main-panel-y) (+ 6 main-panel-x) f" {player-name :<20}" :style style))
- (when debug (debug-info scr player-list)))
+  (.put scr (+ y main-panel-y) (+ 6 main-panel-x) f" {player-name :<20}" :style style)
+  (when (and debug (= sel y) (debug-info scr p)))))
 
 (defn player [scr status &kwonly [debug False]]
  "Display for the current player."
@@ -60,25 +62,27 @@ Display panes for the LMS browser.
  "Display for the current player's playlist."
  (setv mode (get status "mode"))
  (setv playlist (get-in status "playlist_loop"))
+ (setv y-offset (min 0 (- main-panel-y sel))) 
  (when playlist
   (setv elapsed (/ (or (get-in status "time") 0) (or (get-in status "duration") Inf)))
   (for [(, y track) (enumerate playlist)]
-   (setv style (if (= sel y) curses.A_BOLD curses.A_NORMAL))
-   (setv is-current (= (int (get status "playlist_cur_index")) (int (get track "playlist index"))))
-   (setv elapsed-str (if is-current f"[{(* 100 elapsed) : 2.0f}%]" ""))
-   (setv col (if is-current (cond [(= mode "play") 3]
-                                  [(= mode "stop") 2]
-                                  [(= mode "pause") 4]
-                                  [:else 5])
-                          0))
-   (.put scr (+ y main-panel-y) main-panel-x
-    f"{(get track \"playlist index\") :>2d} - {(get track \"title\") :<40}"
-    :col col
-    :style style)
-   (.put scr (+ y main-panel-y) (min (- (.right scr :s elapsed-str) 2) 100)
-    f"{elapsed-str}"
-    :col col
-    :style style)
+   (when (>= (+ y y-offset) 0)
+    (setv style (if (= sel y) curses.A_BOLD curses.A_NORMAL))
+    (setv is-current (= (int (get status "playlist_cur_index")) (int (get track "playlist index"))))
+    (setv elapsed-str (if is-current f"[{(* 100 elapsed) :2.0f}%]" ""))
+    (setv col (if is-current (cond [(= mode "play") 3]
+                                   [(= mode "stop") 2]
+                                   [(= mode "pause") 4]
+                                   [:else 5])
+                           0))
+    (.put scr (+ y y-offset main-panel-y) main-panel-x
+     f"{(get track \"playlist index\") :>2d} - {(get track \"title\") :<40}"
+     :col col
+     :style style)
+    (.put scr (+ y y-offset main-panel-y) (min (- (.right scr :s elapsed-str) 2) 100)
+     f"{elapsed-str}"
+     :col col
+     :style style))
    (when (= sel y)
     (.put scr (- main-panel-y 2) (+ 1 main-panel-x)
      (.join " - " (list (map get-in (repeat track) ["artist" "album" "tracknum" "bitrate" "type"])))
@@ -92,25 +96,32 @@ Display panes for the LMS browser.
  (.put scr (+ 2 title-y) (.centre scr "search") "search" :style curses.A_BOLD :col 191)
  (.put scr (+ 3 title-y) (.centre scr term) term :style (| curses.A_ITALIC curses.A_BOLD) :col 191)
  (.put scr (+ 4 title-y) (.centre scr f"in {kind}") f"in {kind}" :style curses.A_BOLD :col 191)
+ (setv y-offset (min 0 (- main-panel-y sel))) 
  (for [(, y result) (enumerate results)]
-  (setv style (if (= sel y) curses.A_BOLD curses.A_NORMAL))
-  (setv artist (get-in result "artist"))
-  (setv album (get-in result "album"))
-  (setv track (get-in result "title"))
-  (setv genre (get-in result "genre"))
-  (cond [track 
-         (.put scr (+ -2 y main-panel-y) main-panel-x track :style style)
-         (.put scr (+ -2 y main-panel-y) (+ 3 main-panel-x (len track)) album :style style :col 5)
-         (.put scr (+ -2 y main-panel-y) (+ 6 main-panel-x (len track) (len album)) artist :style style :col 4)]
-        [album (.put scr (+ -2 y main-panel-y) (.centre scr album) album :style style)]
-        [artist (.put scr (+ -2 y main-panel-y) (.centre scr artist) artist :style style)])
-  (when debug (debug-info scr results))))
+  (when (>= (+ y y-offset) 0)
+   (setv style (if (= sel y) curses.A_BOLD curses.A_NORMAL))
+   (setv artist (get-in result "artist"))
+   (setv album (get-in result "album"))
+   (setv track (get-in result "title"))
+   (setv genre (get-in result "genre"))
+   (cond [track 
+          (.put scr (+ -2 y y-offset main-panel-y) main-panel-x track :style style)
+          (.put scr (+ -2 y y-offset main-panel-y) (+ 3 main-panel-x (len track)) album :style style :col 5)
+          (.put scr (+ -2 y y-offset main-panel-y) (+ 6 main-panel-x (len track) (len album)) artist :style style :col 4)]
+         [album (.put scr (+ -2 y y-offset main-panel-y) (.centre scr album) album :style style)]
+         [artist (.put scr (+ -2 y y-offset main-panel-y) (.centre scr artist) artist :style style)])
+   (when debug (debug-info scr results)))))
 
 (defn track [scr title album artist]
  "Display current playlist item."
  (when title (.put scr (+ 2 title-y) (.centre scr title) title))
  (when artist (.put scr (+ 3 title-y) (.centre scr artist) artist))
  (when album (.put scr (+ 4 title-y) (.centre scr album) album)))
+
+(defn help [scr lines]
+ "Display long text in the main panel."
+ (for [(, y line) (enumerate lines)]
+  (.put scr (+ y title-y) main-panel-x line))) 
 
 (defn message [scr msg]
  "Write a message."
@@ -122,4 +133,4 @@ Display panes for the LMS browser.
                                (.put scr (+ y y0) x0 k)
                                (.put scr (+ y y0) (+ 30 x0) v))
   (for [(, y r) (enumerate records)]
-   (.put scr (+ y y0) x0 r))))
+   (.put scr (+ y y0) x0 (sorted (.items r))))))

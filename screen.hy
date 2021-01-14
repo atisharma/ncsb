@@ -81,8 +81,8 @@ A simple curses display class.
   Get single-line input in a text box.
   """
   (setv y (- curses.LINES 2))
-  (setv x (+ 4 (len prompt)))
-  (.put self y 1 f"{prompt} >" :col 191)
+  (setv x (+ 3 (len prompt)))
+  (.put self y 1 f"{prompt}>" :col 191)
   (.refresh self.window)
   (setv tw (.newwin curses 1 (- curses.COLS 1) y x))
   (.bkgdset tw (| (.color_pair curses 191) curses.A_BOLD curses.A_ITALIC))
