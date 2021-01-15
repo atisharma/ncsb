@@ -8,16 +8,12 @@ Display panes for the LMS browser.
 ; LMS API documentation
 ; http://lms-vm:9000/html/doc/cli-api.html
 
-(import curses)
-
 (import [util [get-in]])
 
 (setv main-panel-y 9)
 (setv main-panel-x 2)
 (setv server-y 1)
 (setv server-x 2)
-(setv cover-art-y 10)
-(setv cover-art-x 20)
 (setv title-y 1)
 (setv msg-x 2)
 (setv info-panel-y 30)
@@ -32,8 +28,8 @@ Display panes for the LMS browser.
  "Show the players in the player list."
  (for [(, y p) (enumerate player-list)]
   (setv player-name (get p "name"))
-  (when (= sel y) (.put scr title-y (.centre scr player-name) player-name :style curses.A_BOLD :col 5))
-  (setv style (if (= sel y) curses.A_BOLD curses.A_NORMAL))
+  (when (= sel y) (.put scr title-y (.centre scr player-name) player-name :style scr.curses.A_BOLD :col 5))
+  (setv style (if (= sel y) scr.curses.A_BOLD scr.curses.A_NORMAL))
   (.put scr (+ y main-panel-y) main-panel-x "•" :col (if (get p "connected") 3 2))
   (.put scr (+ y main-panel-y) (+ 2 main-panel-x) "⏼" :col (if (get p "power") 3 2))
   (.put scr (+ y main-panel-y) (+ 4 main-panel-x) (if (get p "isplaying") "▶️ " "⏹️ ") :col (if (get p "isplaying") 3 2))
@@ -48,7 +44,7 @@ Display panes for the LMS browser.
  (setv wifi (get status "signalstrength"))
  (setv shuffle (get status "playlist shuffle"))
  (setv repeat_ (get status "playlist repeat"))
- (.put scr title-y (.centre scr player-name) player-name :style curses.A_BOLD :col 5)
+ (.put scr title-y (.centre scr player-name) player-name :style scr.curses.A_BOLD :col 5)
  (.put scr (+ 1 server-y) (+ 0 server-x) f"🔊{volume :3.0f}%")
  (.put scr (+ 1 server-y) (+ 8 server-x) (cond [(= mode "play") "▶️ "]
                                                [(= mode "stop") "⏹️ "]
@@ -71,7 +67,7 @@ Display panes for the LMS browser.
   (setv elapsed (/ (or (get-in status "time") 0) (or (get-in status "duration") Inf)))
   (for [(, y track) (enumerate playlist)]
    (when (>= (+ y y-offset) 0)
-    (setv style (if (= sel y) curses.A_BOLD curses.A_NORMAL))
+    (setv style (if (= sel y) scr.curses.A_BOLD scr.curses.A_NORMAL))
     (setv is-current (= (int (get status "playlist_cur_index")) (int (get track "playlist index"))))
     (setv elapsed-str (if is-current f"[{(* 100 elapsed) :2.0f}%]" ""))
     (setv col (if is-current (cond [(= mode "play") 3]
@@ -90,20 +86,20 @@ Display panes for the LMS browser.
    (when (= sel y)
     (.put scr (- main-panel-y 2) (+ 1 main-panel-x)
      (.join " - " (list (map str (remove none? (map get-in (repeat track) ["artist" "album" "tracknum" "bitrate" "type"])))))
-     :style (| curses.A_ITALIC curses.A_BOLD))) 
+     :style (| scr.curses.A_ITALIC scr.curses.A_BOLD))) 
    (when (and (= sel y) debug)
     (debug-info scr track :y0 main-panel-y :x0 (+ 100 main-panel-x))))))
 
 (defn search-results [scr player-name results term kind sel &kwonly [debug False]]
  "Display search results."
- (.put scr title-y (.centre scr player-name) player-name :style curses.A_BOLD :col 5)
- (.put scr (+ 2 title-y) (.centre scr "search") "search" :style curses.A_BOLD :col 191)
- (.put scr (+ 3 title-y) (.centre scr term) term :style (| curses.A_ITALIC curses.A_BOLD) :col 191)
- (.put scr (+ 4 title-y) (.centre scr f"in {kind}") f"in {kind}" :style curses.A_BOLD :col 191)
+ (.put scr title-y (.centre scr player-name) player-name :style scr.curses.A_BOLD :col 5)
+ (.put scr (+ 2 title-y) (.centre scr "search") "search" :style scr.curses.A_BOLD :col 191)
+ (.put scr (+ 3 title-y) (.centre scr term) term :style (| scr.curses.A_ITALIC scr.curses.A_BOLD) :col 191)
+ (.put scr (+ 4 title-y) (.centre scr f"in {kind}") f"in {kind}" :style scr.curses.A_BOLD :col 191)
  (setv y-offset (min 0 (- (.bottom scr) (+ main-panel-y sel 1)))) 
  (for [(, y result) (enumerate results)]
   (when (>= (+ y y-offset) 0)
-   (setv style (if (= sel y) curses.A_BOLD curses.A_NORMAL))
+   (setv style (if (= sel y) scr.curses.A_BOLD scr.curses.A_NORMAL))
    (setv artist (get-in result "artist"))
    (setv album (get-in result "album"))
    (setv track (get-in result "title"))
@@ -127,15 +123,16 @@ Display panes for the LMS browser.
  (for [(, y line) (enumerate lines)]
   (.put scr (+ y title-y) main-panel-x line))) 
 
-(defn coverart [scr sixel-string]
- "Display the cover art via sixel."
+(defn coverart [sixel-string]
+ "Display the cover art via sixel.
+ We bypass curses and print directly to screen in the desired position."
  (when sixel-string
-  (try
-   (.put scr cover-art-y cover-art-x "")
-   (.put scr cover-art-y cover-art-x sixel-string)
-   ;(.move curses.stdscr cover-art-y cover-art-x)
-   ;(print sixel-string :end "")
-   (except [curses.error]))))
+  (print sixel-string)))
+
+(defn locate-coverart [scr]
+ "Dirty hack to place cover art in the right place."
+ (.put scr 1 (- (.right scr) 11) " ")
+ (.refresh scr))
 
 (defn message [scr msg]
  "Write a message."

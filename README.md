@@ -7,6 +7,7 @@
 - free-text and contextual search
 - current playlist management
 - player control
+- album art in sixel-compliant terminals
 
 ## Installation
 
@@ -26,9 +27,9 @@ $ python3 ncsb
 
 ## Todo
 
+- finish album art (handle failed sixel import)
 - file browser
 - detailed track info
-- album art (how though?)
 - standard packaging
 - vim-style commands?
 - colour themes

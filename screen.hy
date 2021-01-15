@@ -15,6 +15,7 @@ A simple curses display class.
 
  (defn __init__ [self stdscr &kwonly [nodelay True] [halfdelay False]]
   (setv self.stdscr stdscr)
+  (setv self.curses curses)
   (.curs_set curses False)
   (.nodelay stdscr nodelay)
   (when halfdelay (.halfdelay curses halfdelay))

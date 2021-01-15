@@ -64,6 +64,7 @@ search pane
 (defn player-help []
  ["qh       -   back to players"
   "r        -   redraw screen"
+  "c        -   toggle cover art display"
   ""
   "j/k      -   selection down/up in playlist"
   "g/G      -   selection first/last in playlist"
@@ -143,8 +144,7 @@ search pane
  (global debug)
  (setv running True
        sel 0
-       coverid None
-       cover-sixel None)
+       cover {:show False :coverid None :sixel None :displayed False :filename None})
  (.clear scr)
  (while running
   (setv status (.status lms server player))
@@ -156,14 +156,16 @@ search pane
   (.player display scr status :debug debug)
   (.playlist display scr status sel :debug debug)
   (.track display scr (.title lms server player) (.artist lms server player) (.album lms server player))
-  (.server display scr f"LMS v{(.version lms server)}")
+  ; it is unknown why printing on y=1 interacts with the cover art to print in the wrong place
+  (unless (:show cover) (.server display scr f"LMS v{(.version lms server)}"))
   (.refresh scr)
   (setv sel (% sel (len playlist)))
   (setv c (.getkey scr))
   (cond [(none? c)]
         [(= c "?") (help-loop scr (player-help))]
         [(in c "qh") (setv running False)]
-        [(= c "r") (.clear scr)]
+        [(= c "r") (.clear scr) (.refresh scr) (assoc cover :displayed False)]
+        [(= c "c") (.clear scr) (assoc cover :show (not (:show cover)))]
         [(= c "g") (setv sel 0)]
         [(= c "G") (setv sel (dec (len playlist)))]
         [(= c "+") (.volume-change lms server player 2)]
@@ -183,13 +185,7 @@ search pane
    (setv selected-index (get selected-track "playlist index"))
    (setv current-index (int (or (get-in status "playlist_cur_index") 0)))
    (setv current-track (first (filter (fn [track] (= (get track "playlist index") current-index)) playlist)))
-   (when (get current-track "coverart")
-    (if (= coverid (get-in current-track "coverid"))
-     (.coverart display scr cover-sixel)
-     (do (.coverart server coverid 160 160 :fname "/tmp/ncsb-cover.png")
-         (setv cover-sixel (.show sixel "/tmp/ncsb-cover.png" 160))
-         (.coverart display scr cover-sixel))))
-   (setv coverid (get-in current-track "coverid"))
+   (update-coverart scr server current-track cover)
    (cond [(none? c)]
          [(= c "j") (setv sel (% (inc sel) (len playlist)))]
          [(= c "k") (setv sel (% (dec sel) (len playlist)))]
@@ -201,7 +197,8 @@ search pane
          [(= c "d") (.playlist-delete lms server player (get selected-track "playlist index"))]
          [(= c "b") (search-loop scr server player player-name "albums" f"artist_id:{(get-in selected-track \"artist_id\")}")]
          [(= c "t") (search-loop scr server player player-name "songs" f"artist_id:{(get-in selected-track \"artist_id\")}")]
-         [(= c "o") (search-loop scr server player player-name "songs" f"album_id:{(get-in selected-track \"album_id\")}")]))))
+         [(= c "o") (search-loop scr server player player-name "songs" f"album_id:{(get-in selected-track \"album_id\")}")])))
+ (.clear scr))
 
 
 (defn search-loop [scr server player player-name kind term]
@@ -255,6 +252,28 @@ search pane
   (setv c (.getkey scr))
   (cond [(none? c)]
         [:else (setv running False)])))
+
+
+(defn update-coverart [scr server track cover]
+ "Fetch/show the cover art of the current track."
+ ; cover {:coverid None :sixel None :last-coverid None :fresh False :filename ".."}
+ ; get new cover art on new track
+ (when (:show cover)
+  (unless (= (:coverid cover) (get-in track "coverid"))
+   (assoc cover :coverid (get-in track "coverid")
+                :filename f"/tmp/ncsb-cover-{(:coverid cover)}.png"
+                :displayed False)
+   (.coverart server (:coverid cover) 160 160 :fname (:filename cover)))
+  (unless (:displayed cover)
+   (try
+    ; this causes a visible flash but gets the cursor in the right place
+    (.locate-coverart display scr)
+    (-> cover
+     (:filename)
+     (sixel.show 160)
+     (display.coverart))
+    (assoc cover :displayed True)
+    (except [RuntimeError])))))
 
 
 (defn main [&kwonly server-ip port]
