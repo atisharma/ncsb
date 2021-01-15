@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 
 import hy
-import argparse
+import sys
 
 from main import main
 
 if __name__ == "__main__":
-    main(server_ip="192.168.1.131", port=9000)
+    if len(sys.argv) == 2:
+        cmd, ip = sys.argv
+        port = 9000
+    else:
+        cmd, ip, port = sys.argv
+    main(server_ip=ip, port=port)

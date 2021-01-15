@@ -56,7 +56,7 @@ search pane
   "g/G      -   first/last in player list"
   ""
   "l/<ret>  -   show player playlist"
-  "<space>  -   pause/unpause pselected layer"
+  "<space>  -   pause/unpause selected layer"
   "p        -   power on/off selected player"
   ""
   "?        -   show this help"])
@@ -65,24 +65,29 @@ search pane
  ["qh       -   back to players"
   "r        -   redraw screen"
   ""
-  "j/k      -   down/up in playlist"
-  "g/G      -   first/last in playlist"
+  "j/k      -   selection down/up in playlist"
+  "g/G      -   selection first/last in playlist"
   ""
   "+/-      -   volume up/down"
-  "s        -   stop player"
+  "x        -   stop player"
   "<space>  -   pause/unpause player"
   "p        -   toggle power"
   ""
   "l/<ret>  -   play selected song"
   "J/K      -   skip/previous in playlist"
+  "M/m      -   move selected song up/down in playlist"
   "S        -   shuffle off/songs/albums"
   "R        -   repeat off/song/playlist"
   "C        -   clear playlist"
   "d        -   delete selected song from playlist"
   ""
-  "a        -   search in artists"
-  "b        -   search in albums"
-  "/        -   search in tracks"
+  "A        -   text search for artists"
+  "B        -   text search for albums"
+  "/        -   text search for tracks"
+  ""
+  "b        -   albums by artist of selected song"
+  "t        -   tracks by artist of selected song"
+  "o        -   tracks on album of selected song"
   ""
   "?        -   show this help"])
 
@@ -96,6 +101,8 @@ search pane
   "a        -   add selected item to end of playlist"
   "i        -   insert selected item in playlist"
   "p/<ret>  -   replace playlist with selected item"
+  ""
+  "//l      -   contextual search on selected item"
   ""
   "?        -   show this help"])
 
@@ -121,10 +128,10 @@ search pane
            [(= c "?") (help-loop scr (server-help))]
            [(= c "q") (setv running False)]
            [(= c "r") (.clear scr)]
-           [(= c "j") (setv sel (% (+ sel 1) (len players)))]
-           [(= c "k") (setv sel (% (- sel 1) (len players)))]
+           [(= c "j") (setv sel (% (inc sel) (len players)))]
+           [(= c "k") (setv sel (% (dec sel) (len players)))]
            [(= c "g") (setv sel 0)]
-           [(= c "G") (setv sel (- (len players) 1))]
+           [(= c "G") (setv sel (dec (len players)))]
            [(= c " ") (.pause lms server player)]
            [(= c "p") (.power lms server player "toggle")]
            [(= c "D") (setv debug (not debug))]
@@ -150,20 +157,21 @@ search pane
   (.track display scr (.title lms server player) (.artist lms server player) (.album lms server player))
   (.server display scr f"LMS v{(.version lms server)}")
   (.refresh scr)
+  (setv sel (% sel (len playlist)))
   (setv c (.getkey scr))
   (cond [(none? c)]
         [(= c "?") (help-loop scr (player-help))]
         [(in c "qh") (setv running False)]
         [(= c "r") (.clear scr)]
         [(= c "g") (setv sel 0)]
-        [(= c "G") (setv sel (- (len playlist) 1))]
+        [(= c "G") (setv sel (dec (len playlist)))]
         [(= c "+") (.volume-change lms server player 2)]
         [(= c "-") (.volume-change lms server player -2)]
         [(= c " ") (.pause lms server player)]
-        [(= c "a") (search-loop scr server player player-name "artists" (.input scr "search artists"))]
-        [(= c "b") (search-loop scr server player player-name "albums" (.input scr "search albums"))]
-        [(= c "/") (search-loop scr server player player-name "songs" (.input scr "search songs"))]
-        [(= c "s") (.stop lms server player)]
+        [(= c "A") (search-loop scr server player player-name "artists" (+ "search:" (.input scr "search artists")))]
+        [(= c "B") (search-loop scr server player player-name "albums" (+ "search:" (.input scr "search albums")))]
+        [(= c "/") (search-loop scr server player player-name "songs" (+ "search:" (.input scr "search songs")))]
+        [(= c "x") (.stop lms server player)]
         [(= c "p") (.power lms server player "toggle")]
         [(= c "S") (.playlist-shuffle lms server player (% (+ 1 shuffle) 3))]
         [(= c "R") (.playlist-repeat lms server player (% (+ 1 repeat_) 3))]
@@ -171,19 +179,25 @@ search pane
         [(= c "D") (setv debug (not debug))])
   (when playlist
    (setv selected-track (get playlist (% sel (len playlist))))
+   (setv selected-index (get selected-track "playlist index"))
    (setv current-index (int (or (get-in status "playlist_cur_index") 0)))
    (setv current-track (first (filter (fn [track] (= (get track "playlist index") current-index)) playlist)))
    (cond [(none? c)]
-         [(= c "j") (setv sel (% (+ sel 1) (len playlist)))]
-         [(= c "k") (setv sel (% (- sel 1) (len playlist)))]
+         [(= c "j") (setv sel (% (inc sel) (len playlist)))]
+         [(= c "k") (setv sel (% (dec sel) (len playlist)))]
+         [(= c "M") (.playlist-move-up lms server player selected-index) (setv sel (% (dec sel) (len playlist)))]
+         [(= c "m") (.playlist-move-down lms server player selected-index) (setv sel (% (inc sel) (len playlist)))]
          [(= c "J") (.playlist-skip lms server player)]
          [(= c "K") (.playlist-prev lms server player)]
          [(in c "l\n") (.playlist-play-index lms server player (get playlist sel "playlist index"))]
-         [(= c "d") (.playlist-delete lms server player (get selected-track "playlist index"))]))))
+         [(= c "d") (.playlist-delete lms server player (get selected-track "playlist index"))]
+         [(= c "b") (search-loop scr server player player-name "albums" f"artist_id:{(get-in selected-track \"artist_id\")}")]
+         [(= c "t") (search-loop scr server player player-name "songs" f"artist_id:{(get-in selected-track \"artist_id\")}")]
+         [(= c "o") (search-loop scr server player player-name "songs" f"album_id:{(get-in selected-track \"album_id\")}")]))))
 
 
 (defn search-loop [scr server player player-name kind term]
- "Search the library to manipulate playlist."
+ "Search the library and add/insert/replace playlist."
  (global debug)
  (when term
   (setv running True
@@ -197,7 +211,7 @@ search pane
   (.clear scr)
   (when results
    (while running
-    (.search-results display scr player-name results term kind sel :debug debug)
+    (.search-results display scr player-name results (second (.split term ":")) kind sel :debug debug)
     (setv selected-result (get results (% sel (len results))))
     (.refresh scr)
     (setv c (.getkey scr))
@@ -206,10 +220,13 @@ search pane
           [(in c "qh") (setv running False)]
           [(= c "r") (.clear scr)]
           [(= c "g") (setv sel 0)]
-          [(= c "G") (setv sel (- (len playlist) 1))]
-          [(= c "j") (setv sel (% (+ sel 1) (len results)))]
-          [(= c "k") (setv sel (% (- sel 1) (len results)))]
+          [(= c "G") (setv sel (dec (len playlist)))]
+          [(= c "j") (setv sel (% (inc sel) (len results)))]
+          [(= c "k") (setv sel (% (dec sel) (len results)))]
           [(= c "D") (setv debug (not debug))]
+          [(in c "l/") (cond [(= kind "artists") (search-loop scr server player player-name "albums" f"artist_id:{(get-in selected-result \"id\")}")]
+                             [(= kind "albums") (search-loop scr server player player-name "songs" f"album_id:{(get-in selected-result \"id\")}")]
+                             [(= kind "songs") (search-loop scr server player player-name "artists" f"track_id:{(get-in selected-result \"id\")}")])]
           [(in c "aip\n") (.playlist-control lms server player
                            (get selected-result "id")
                            :action (cond [(= c "a") "add"]

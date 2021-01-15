@@ -1,13 +1,18 @@
 # ncsb
-## an ncurses squeezebox controller for logitech media server
+## An ncurses Squeezebox controller for Logitech Media Server (LMS)
 
-## todo
+## Features
 
-- command-line specify server-ip and port
-- handle playlist too long to show
+- slick curses TUI to control your squeezeboxes / squeezelite
+- free-text and contextual search
+- current playlist management
+- player control
+
+## Todo
+
+- file browser
 - detailed track info
-- playlist move up/down
-- album art
+- album art (how though?)
 - standard packaging
-- vim-style commands
+- vim-style commands?
 - colour themes

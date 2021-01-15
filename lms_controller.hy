@@ -61,14 +61,17 @@ Control LMS by the json RPC interface.
   (.send server ["-" ["players" "0" x]])
   (get-in x "players_loop")))
  
-
 (defn rescan-progress [server]
  "Return progress of a rescan."
- (.send server ["-" ["rescanprogress"]]))
+ (get-in (.send server ["-" ["rescanprogress"]]) "rescan"))
 
 (defn version [server]
  "Return LMS version number."
  (get-in (.send server ["-" ["version" "?"]]) "_version"))
+
+(defn serverstatus [server]
+ "Return LMS server status."
+ (.send server ["-" ["serverstatus"]]))
 
 
 (defn status [server mac &kwonly [from 0] [to 50]]
@@ -112,14 +115,6 @@ Control LMS by the json RPC interface.
  "Seek some seconds forward or backward in the current song."
  (.send server [mac ["time" "{seconds :+d}"]]))
 
-(defn volume [server mac volume]
- "Set the volume of the player (between 0 and 100)."
- (.send server [mac ["mixer" "volume" f"{(-> volume int (min 100) (max 0))}"]]))
-
-(defn volume-change [server mac change]
- "Increase the volume of the player by change."
- (.send server [mac ["mixer" "volume" f"{(int change) :+d}"]]))
-
 (defn artist [server mac]
  "Return track artist of current playlist item."
  (get-in (.send server [mac ["artist" "?"]]) "_artist"))
@@ -152,10 +147,19 @@ Control LMS by the json RPC interface.
   0
   (/ elapsed duration)))
 
+
+(defn volume [server mac volume]
+ "Set the volume of the player (between 0 and 100)."
+ (.send server [mac ["mixer" "volume" f"{(-> volume int (min 100) (max 0))}"]]))
+
+(defn volume-change [server mac change]
+ "Increase the volume of the player by change."
+ (.send server [mac ["mixer" "volume" f"{(int change) :+d}"]]))
+
+
 (defn track-count [server mac]
  "Return number of tracks in current playlist."
  (get-in (.send server [mac ["playlist" "tracks" "?"]]) "_tracks"))
-
 
 (defn playlist-skip [server mac]
  "Play next item in playlist."
@@ -173,8 +177,20 @@ Control LMS by the json RPC interface.
      (max 0))))
 
 (defn playlist-jump [server mac n]
- "Jump n positions in the playlist."
- (.send server [mac ["playlist" "jump" "{n :+d}"]]))
+ "Jump to index n in the playlist."
+ (.send server [mac ["playlist" "jump" n]]))
+
+(defn playlist-move [server mac from to]
+ "Move track #from to #to in the playlist."
+ (.send server [mac ["playlist" "move" from to]]))
+
+(defn playlist-move-up [server mac n]
+ "Move track n in the playlist to one before."
+ (playlist-move server mac n (max 0 (dec n))))
+
+(defn playlist-move-down [server mac n]
+ "Move track n in the playlist to one later."
+ (playlist-move server mac n (inc n)))
 
 (defn playlist-play-index [server mac n]
  "Play nth item in playlist."
@@ -214,7 +230,17 @@ Control LMS by the json RPC interface.
  "Get tracks on album."
  (search server mac "songs" album))
 
-(defn search [server mac kind term]
+(defn search [server mac kind params]
  "Search on a general term.
  kind is one of artits, albums, songs, tracks, playlists."
- (.send server [mac [kind 0 100 f"search:{term}"]]))
+ (.send server [mac [kind 0 100 params]]))
+
+(defn songinfo [server track_id]
+ "Return all information on a song."
+ (.send server ["-" ["songinfo" 0 200 f"track_id:{track_id}"]]))
+
+(defn browse [server folder-id &kwonly [return-top False] [media-type "audio"]]
+ "Browse a music library folder."
+ (if return-top
+  (.send server ["-" ["musicfolder" 0 200 f"folder_id:{folder_id}"]])
+  (.send server ["-" ["musicfolder" 0 200 f"folder_id:{folder_id},return_top:1"]])))

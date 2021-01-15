@@ -5,6 +5,8 @@ Display panes for the LMS browser.
 
 ; some useful unicode symbols
 "▶️ ⏸️ ⏯️ ◀️ ⏹️ ⏪️ ⏩️ ⏮️ ⏏️ 🔀️ 🔁️ 🔃️ 🔂️ ℹ️ 🔄️ ⏻ ⏼ ⏽ ⭘ ⏾ 🔊"
+; LMS API documentation
+; http://lms-vm:9000/html/doc/cli-api.html
 
 (import curses)
 
@@ -62,7 +64,7 @@ Display panes for the LMS browser.
  "Display for the current player's playlist."
  (setv mode (get status "mode"))
  (setv playlist (get-in status "playlist_loop"))
- (setv y-offset (min 0 (- main-panel-y sel))) 
+ (setv y-offset (min 0 (- (.bottom scr) (+ main-panel-y sel 1)))) 
  (when playlist
   (setv elapsed (/ (or (get-in status "time") 0) (or (get-in status "duration") Inf)))
   (for [(, y track) (enumerate playlist)]
@@ -85,7 +87,7 @@ Display panes for the LMS browser.
      :style style))
    (when (= sel y)
     (.put scr (- main-panel-y 2) (+ 1 main-panel-x)
-     (.join " - " (list (map str (map get-in (repeat track) ["artist" "album" "tracknum" "bitrate" "type"]))))
+     (.join " - " (list (map str (remove none? (map get-in (repeat track) ["artist" "album" "tracknum" "bitrate" "type"])))))
      :style (| curses.A_ITALIC curses.A_BOLD))) 
    (when (and (= sel y) debug)
     (debug-info scr track :y0 main-panel-y :x0 (+ 100 main-panel-x))))))
@@ -96,7 +98,7 @@ Display panes for the LMS browser.
  (.put scr (+ 2 title-y) (.centre scr "search") "search" :style curses.A_BOLD :col 191)
  (.put scr (+ 3 title-y) (.centre scr term) term :style (| curses.A_ITALIC curses.A_BOLD) :col 191)
  (.put scr (+ 4 title-y) (.centre scr f"in {kind}") f"in {kind}" :style curses.A_BOLD :col 191)
- (setv y-offset (min 0 (- main-panel-y sel))) 
+ (setv y-offset (min 0 (- (.bottom scr) (+ main-panel-y sel 1)))) 
  (for [(, y result) (enumerate results)]
   (when (>= (+ y y-offset) 0)
    (setv style (if (= sel y) curses.A_BOLD curses.A_NORMAL))
@@ -110,7 +112,7 @@ Display panes for the LMS browser.
           (.put scr (+ -2 y y-offset main-panel-y) (+ 6 main-panel-x (len track) (len album)) artist :style style :col 4)]
          [album (.put scr (+ -2 y y-offset main-panel-y) (.centre scr album) album :style style)]
          [artist (.put scr (+ -2 y y-offset main-panel-y) (.centre scr artist) artist :style style)])
-   (when debug (debug-info scr results)))))
+   (when debug (debug-info scr track)))))
 
 (defn track [scr title album artist]
  "Display current playlist item."
