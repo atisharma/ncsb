@@ -13,10 +13,11 @@ A simple curses display class.
  Manage the display.
  """
 
- (defn __init__ [self stdscr &kwonly [nodelay True]]
+ (defn __init__ [self stdscr &kwonly [nodelay True] [halfdelay False]]
   (setv self.stdscr stdscr)
   (.curs_set curses False)
   (.nodelay stdscr nodelay)
+  (when halfdelay (.halfdelay curses halfdelay))
   (.start_color curses)
   (.use_default_colors curses)
   (for [i (range 0 curses.COLORS)]

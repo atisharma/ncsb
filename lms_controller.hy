@@ -3,6 +3,7 @@ Control LMS by the json RPC interface.
 """
 
 (import requests)
+(import shutil)
 
 (import [util [get-in]])
 
@@ -37,14 +38,13 @@ Control LMS by the json RPC interface.
    (except [e [requests.exceptions.RequestException]]
     (raise (LMSError (str e))))))
 
- (defn coverart [self coverid &optional [h 200] [w 200]]
+ (defn coverart [self coverid &optional [h 200] [w 200] &kwonly [fname None]]
   "Fetch the cover art from the LMS server.
   Save to /tmp/coverid.png."
   (setv url f"http://{self.ip}:{self.port}/music/{coverid}/cover_{h}x{w}.png")
-  (setv fname f"/tmp/{coverid}.png")
   (try
    (with [r (.get requests url :stream True)]
-    (with [f (open fname "wb")]
+    (with [f (open (or fname f"/tmp/{coverid}.png") "wb")]
      (.copyfileobj shutil r.raw f)))
    (except [e [requests.exceptions.RequestException]]
     (raise (LMSError (str e)))))))

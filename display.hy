@@ -16,6 +16,8 @@ Display panes for the LMS browser.
 (setv main-panel-x 2)
 (setv server-y 1)
 (setv server-x 2)
+(setv cover-art-y 10)
+(setv cover-art-x 20)
 (setv title-y 1)
 (setv msg-x 2)
 (setv info-panel-y 30)
@@ -33,7 +35,7 @@ Display panes for the LMS browser.
   (when (= sel y) (.put scr title-y (.centre scr player-name) player-name :style curses.A_BOLD :col 5))
   (setv style (if (= sel y) curses.A_BOLD curses.A_NORMAL))
   (.put scr (+ y main-panel-y) main-panel-x "•" :col (if (get p "connected") 3 2))
-  (.put scr (+ y main-panel-y) (+ 2 main-panel-x) "⏻" :col (if (get p "power") 3 2))
+  (.put scr (+ y main-panel-y) (+ 2 main-panel-x) "⏼" :col (if (get p "power") 3 2))
   (.put scr (+ y main-panel-y) (+ 4 main-panel-x) (if (get p "isplaying") "▶️ " "⏹️ ") :col (if (get p "isplaying") 3 2))
   (.put scr (+ y main-panel-y) (+ 6 main-panel-x) f" {player-name :<20}" :style style)
   (when (and debug (= sel y) (debug-info scr p)))))
@@ -124,6 +126,16 @@ Display panes for the LMS browser.
  "Display long text in the main panel."
  (for [(, y line) (enumerate lines)]
   (.put scr (+ y title-y) main-panel-x line))) 
+
+(defn coverart [scr sixel-string]
+ "Display the cover art via sixel."
+ (when sixel-string
+  (try
+   (.put scr cover-art-y cover-art-x "")
+   (.put scr cover-art-y cover-art-x sixel-string)
+   ;(.move curses.stdscr cover-art-y cover-art-x)
+   ;(print sixel-string :end "")
+   (except [curses.error]))))
 
 (defn message [scr msg]
  "Write a message."

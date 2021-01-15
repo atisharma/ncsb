@@ -42,7 +42,7 @@ search pane
 (import [lms-controller :as lms])
 (import [screen [screen]])
 (import [util [get-in]])
-
+(import sixel)
 
 (setv debug False)
 
@@ -73,7 +73,7 @@ search pane
   "<space>  -   pause/unpause player"
   "p        -   toggle power"
   ""
-  "l/<ret>  -   play selected song"
+  "<ret>    -   play selected song"
   "J/K      -   skip/previous in playlist"
   "M/m      -   move selected song up/down in playlist"
   "S        -   shuffle off/songs/albums"
@@ -113,8 +113,7 @@ search pane
  (setv running True
        sel 0)
  (with [server (lms.Server server-ip port)]
-  (with [scr (screen stdscr :nodelay False)]
-   (.halfdelay curses 5)
+  (with [scr (screen stdscr :nodelay False :halfdelay 10)]
    (while running
     (try
      (setv players (.players lms server))
@@ -143,7 +142,9 @@ search pane
  "Event loop showing selected player and playlist."
  (global debug)
  (setv running True
-       sel 0)
+       sel 0
+       coverid None
+       cover-sixel None)
  (.clear scr)
  (while running
   (setv status (.status lms server player))
@@ -182,6 +183,13 @@ search pane
    (setv selected-index (get selected-track "playlist index"))
    (setv current-index (int (or (get-in status "playlist_cur_index") 0)))
    (setv current-track (first (filter (fn [track] (= (get track "playlist index") current-index)) playlist)))
+   (when (get current-track "coverart")
+    (if (= coverid (get-in current-track "coverid"))
+     (.coverart display scr cover-sixel)
+     (do (.coverart server coverid 160 160 :fname "/tmp/ncsb-cover.png")
+         (setv cover-sixel (.show sixel "/tmp/ncsb-cover.png" 160))
+         (.coverart display scr cover-sixel))))
+   (setv coverid (get-in current-track "coverid"))
    (cond [(none? c)]
          [(= c "j") (setv sel (% (inc sel) (len playlist)))]
          [(= c "k") (setv sel (% (dec sel) (len playlist)))]
@@ -189,7 +197,7 @@ search pane
          [(= c "m") (.playlist-move-down lms server player selected-index) (setv sel (% (inc sel) (len playlist)))]
          [(= c "J") (.playlist-skip lms server player)]
          [(= c "K") (.playlist-prev lms server player)]
-         [(in c "l\n") (.playlist-play-index lms server player (get playlist sel "playlist index"))]
+         [(= c "\n") (.playlist-play-index lms server player (get playlist sel "playlist index"))]
          [(= c "d") (.playlist-delete lms server player (get selected-track "playlist index"))]
          [(= c "b") (search-loop scr server player player-name "albums" f"artist_id:{(get-in selected-track \"artist_id\")}")]
          [(= c "t") (search-loop scr server player player-name "songs" f"artist_id:{(get-in selected-track \"artist_id\")}")]
