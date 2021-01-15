@@ -85,7 +85,7 @@ Display panes for the LMS browser.
      :style style))
    (when (= sel y)
     (.put scr (- main-panel-y 2) (+ 1 main-panel-x)
-     (.join " - " (list (map get-in (repeat track) ["artist" "album" "tracknum" "bitrate" "type"])))
+     (.join " - " (list (map str (map get-in (repeat track) ["artist" "album" "tracknum" "bitrate" "type"]))))
      :style (| curses.A_ITALIC curses.A_BOLD))) 
    (when (and (= sel y) debug)
     (debug-info scr track :y0 main-panel-y :x0 (+ 100 main-panel-x))))))
