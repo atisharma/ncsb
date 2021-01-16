@@ -69,6 +69,7 @@ Coverart requires libsixel to be installed on your system (presumably via your p
 - use events instead of polling
 - a better screencast
 - scrolling when text is too wide for terminal
+- remote cover art
 
 
 ## Credits
