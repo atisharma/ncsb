@@ -60,6 +60,8 @@ Coverart requires libsixel to be installed on your system (presumably via your p
 ## Todo
 
 - file browser
+- play general URL (pasted in)
+- apps / podcast / menu
 - detailed track info
 - standard python packaging
 - vim-style commands?

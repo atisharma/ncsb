@@ -138,7 +138,7 @@ search pane
            [(= c "D") (setv debug (not debug))]
            [(in c "l\n") (player-loop scr server player)])
      (except [KeyboardInterrupt] (setv running False))
-     (except [e [ConnectionError]] (.message display scr e)))))))
+     (except [e [LMSError]] (.message display scr e)))))))
 
 
 (defn player-loop [scr server player]
