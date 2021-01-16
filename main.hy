@@ -37,6 +37,7 @@ search pane
 
 
 (import curses)
+(import [requests.exceptions [ConnectionError]])
 
 (import display)
 (import [lms-controller :as lms])
@@ -70,7 +71,7 @@ search pane
   "g/G      -   selection first/last in playlist"
   ""
   "+/-      -   volume up/down"
-  "x        -   stop player"
+  "s        -   stop player"
   "<space>  -   pause/unpause player"
   "p        -   toggle power"
   ""
@@ -80,7 +81,7 @@ search pane
   "S        -   shuffle off/songs/albums"
   "R        -   repeat off/song/playlist"
   "C        -   clear playlist"
-  "d        -   delete selected song from playlist"
+  "x        -   remove selected song from playlist"
   ""
   "A        -   text search for artists"
   "B        -   text search for albums"
@@ -136,7 +137,8 @@ search pane
            [(= c "p") (.power lms server player "toggle")]
            [(= c "D") (setv debug (not debug))]
            [(in c "l\n") (player-loop scr server player)])
-     (except [KeyboardInterrupt] (setv running False)))))))
+     (except [KeyboardInterrupt] (setv running False))
+     (except [e [ConnectionError]] (.message display scr e)))))))
 
 
 (defn player-loop [scr server player]
@@ -144,7 +146,7 @@ search pane
  (global debug)
  (setv running True
        sel 0
-       cover {:show False :coverid None :sixel None :displayed False :filename None})
+       cover {:show False :coverid None :sixel None :displayed False :filename None :prev-track-id None})
  (.clear scr)
  (while running
   (setv status (.status lms server player))
@@ -174,7 +176,7 @@ search pane
         [(= c "A") (search-loop scr server player player-name "artists" (+ "search:" (.input scr "search artists")))]
         [(= c "B") (search-loop scr server player player-name "albums" (+ "search:" (.input scr "search albums")))]
         [(= c "/") (search-loop scr server player player-name "songs" (+ "search:" (.input scr "search songs")))]
-        [(= c "x") (.stop lms server player)]
+        [(= c "s") (.stop lms server player)]
         [(= c "p") (.power lms server player "toggle")]
         [(= c "S") (.playlist-shuffle lms server player (% (+ 1 shuffle) 3))]
         [(= c "R") (.playlist-repeat lms server player (% (+ 1 repeat_) 3))]
@@ -194,7 +196,7 @@ search pane
          [(= c "J") (.playlist-skip lms server player)]
          [(= c "K") (.playlist-prev lms server player)]
          [(= c "\n") (.playlist-play-index lms server player (get playlist sel "playlist index"))]
-         [(= c "d") (.playlist-delete lms server player (get selected-track "playlist index"))]
+         [(= c "x") (.playlist-delete lms server player (get selected-track "playlist index"))]
          [(= c "b") (search-loop scr server player player-name "albums" f"artist_id:{(get-in selected-track \"artist_id\")}")]
          [(= c "t") (search-loop scr server player player-name "songs" f"artist_id:{(get-in selected-track \"artist_id\")}")]
          [(= c "o") (search-loop scr server player player-name "songs" f"album_id:{(get-in selected-track \"album_id\")}")])))
@@ -264,7 +266,7 @@ search pane
                 :filename f"/tmp/ncsb-cover-{(:coverid cover)}.png"
                 :displayed False)
    (.coverart server (:coverid cover) 160 160 :fname (:filename cover)))
-  (unless (:displayed cover)
+  (unless (and (:displayed cover) (= (:prev-track-id cover) (get-in track "id")))
    (try
     ; this causes a visible flash but gets the cursor in the right place
     (.locate-coverart display scr)
@@ -272,7 +274,7 @@ search pane
      (:filename)
      (sixel.show 160)
      (display.coverart))
-    (assoc cover :displayed True)
+    (assoc cover :displayed True :prev-track-id (get-in track "id"))
     (except [RuntimeError])))))
 
 
