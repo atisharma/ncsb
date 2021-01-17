@@ -4,6 +4,7 @@ Control LMS by the json RPC interface.
 
 (import requests)
 (import shutil)
+(import [pathlib [Path]])
 
 (import [util [get-in]])
 
@@ -16,14 +17,16 @@ Control LMS by the json RPC interface.
  (defn __init__ [self server &optional [port 9000]]
   (setv self.url f"http://{server}:{port}/jsonrpc.js")
   (setv self.ip server)
-  (setv self.port port))
+  (setv self.port port)
+  (.mkdir (Path "/tmp/ncsb") :parents True :exist_ok True))
 
  (defn __del__ [self])
 
  (defn __enter__ [self]
   self)
 
- (defn __exit__ [self exc-type exc-val exc-tb])
+ (defn __exit__ [self exc-type exc-val exc-tb]
+  (.rmtree shutil "/tmp/ncsb"))
 
  (defn send [self command]
   "Send a command list to the LMS server.
@@ -40,15 +43,26 @@ Control LMS by the json RPC interface.
 
  (defn coverart [self coverid &optional [h 200] [w 200] &kwonly [fname None]]
   "Fetch the cover art from the LMS server.
-  Save to /tmp/coverid.png."
+  Save to fname or /tmp/ncsb/{coverid}.png."
   (setv url f"http://{self.ip}:{self.port}/music/{coverid}/cover_{h}x{w}.png")
   (try
    (with [r (.get requests url :stream True)]
-    (with [f (open (or fname f"/tmp/{coverid}.png") "wb")]
+    (with [f (open (or fname f"/tmp/ncsb/{coverid}.png") "wb")]
+     (.copyfileobj shutil r.raw f)))
+   (except [e [requests.exceptions.RequestException]]
+    (raise (LMSError (str e))))))
+
+ (defn remote-coverart [self url &kwonly [fname None]]
+  "Fetch remote cover art from a provided LMS server.
+  Save to fname or /tmp/ncsb/remote.png."
+  ; If not http in url, it's a local url which needs expanding.
+  (unless (in "http" url) (setv url f"http://{self.ip}:{self.port}/{url}"))
+  (try
+   (with [r (.get requests url :stream True)]
+    (with [f (open (or fname f"/tmp/ncsb/remote.png") "wb")]
      (.copyfileobj shutil r.raw f)))
    (except [e [requests.exceptions.RequestException]]
     (raise (LMSError (str e)))))))
-
 
 (defn player-count [server]
  "Return number of players."

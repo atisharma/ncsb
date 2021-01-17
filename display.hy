@@ -131,7 +131,7 @@ Display panes for the LMS browser.
 
 (defn locate-coverart [scr]
  "Dirty hack to place cover art in the right place."
- (.put scr 1 (- (.right scr) 11) " ")
+ (.put scr 1 (- (.right scr) 12) " ")
  (.refresh scr))
 
 (defn message [scr msg]

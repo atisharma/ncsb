@@ -262,10 +262,12 @@ search pane
  ; get new cover art on new track
  (when (:show cover)
   (unless (= (:coverid cover) (get-in track "coverid"))
+   (.message display scr (type (get track "remote")))
    (assoc cover :coverid (get-in track "coverid")
-                :filename f"/tmp/ncsb-cover-{(:coverid cover)}.png"
+                :filename f"/tmp/ncsb/ncsb-cover-{(:coverid cover)}.png"
                 :displayed False)
-   (.coverart server (:coverid cover) 160 160 :fname (:filename cover)))
+   (if (get-in track "artwork_url") (.remote-coverart server (get-in track "artwork_url") :fname (:filename cover))
+       (.coverart server (:coverid cover) 160 160 :fname (:filename cover))))
   (unless (and (:displayed cover) (= (:prev-track-id cover) (get-in track "id")))
    (try
     ; this causes a visible flash but gets the cursor in the right place
