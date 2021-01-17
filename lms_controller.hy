@@ -30,7 +30,7 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
   self)
 
  (defn __exit__ [self exc-type exc-val exc-tb]
-  (.rmtree shutil "/tmp/ncsb"))
+  (.rmtree shutil "/tmp/ncsb" :ignore-errors True))
 
  (defn send [self command]
   "Send a command list to the LMS server.

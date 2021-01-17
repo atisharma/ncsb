@@ -274,12 +274,12 @@ search pane
   (unless (and (:displayed cover) (= (:prev-track-id cover) (get-in track "id")))
    (try
     ; this causes a visible flash but gets the cursor in the right place
+    (assoc cover :displayed True :prev-track-id (get-in track "id"))
     (.locate-coverart display scr)
     (-> cover
      (:filename)
      (sixel.show 160)
      (display.coverart))
-    (assoc cover :displayed True :prev-track-id (get-in track "id"))
     (except [RuntimeError])))))
 
 
