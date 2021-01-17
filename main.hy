@@ -74,6 +74,7 @@ search pane
   "s        -   stop player"
   "<space>  -   pause/unpause player"
   "p        -   toggle power"
+  "<>       -   seek backward/forward 5s"
   ""
   "<ret>    -   play selected song"
   "J/K      -   skip/previous in playlist"
@@ -191,6 +192,8 @@ search pane
    (cond [(none? c)]
          [(= c "j") (setv sel (% (inc sel) (len playlist)))]
          [(= c "k") (setv sel (% (dec sel) (len playlist)))]
+         [(= c "<") (.seek-backward lms server player)]
+         [(= c ">") (.seek-forward lms server player)]
          [(= c "M") (.playlist-move-up lms server player selected-index) (setv sel (% (dec sel) (len playlist)))]
          [(= c "m") (.playlist-move-down lms server player selected-index) (setv sel (% (inc sel) (len playlist)))]
          [(= c "J") (.playlist-skip lms server player)]

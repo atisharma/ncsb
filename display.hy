@@ -5,8 +5,6 @@ Display panes for the LMS browser.
 
 ; some useful unicode symbols
 "▶️ ⏸️ ⏯️ ◀️ ⏹️ ⏪️ ⏩️ ⏮️ ⏏️ 🔀️ 🔁️ 🔃️ 🔂️ ℹ️ 🔄️ ⏻ ⏼ ⏽ ⭘ ⏾ 🔊"
-; LMS API documentation
-; http://lms-vm:9000/html/doc/cli-api.html
 
 (import [util [get-in]])
 
@@ -64,7 +62,7 @@ Display panes for the LMS browser.
  (setv playlist (get-in status "playlist_loop"))
  (setv y-offset (min 0 (- (.bottom scr) (+ main-panel-y sel 1)))) 
  (when playlist
-  (setv elapsed (/ (or (get-in status "time") 0) (or (get-in status "duration") Inf)))
+  (setv elapsed (/ (or (int (get-in status "time")) 0) (or (get-in status "duration") Inf)))
   (for [(, y track) (enumerate playlist)]
    (when (>= (+ y y-offset) 0)
     (setv style (if (= sel y) scr.curses.A_BOLD scr.curses.A_NORMAL))

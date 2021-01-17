@@ -1,5 +1,9 @@
 """
 Control LMS by the json RPC interface.
+
+LMS API documentation is at
+http://lms-vm:9000/html/doc/cli-api.html
+https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 """
 
 (import requests)
@@ -51,6 +55,9 @@ Control LMS by the json RPC interface.
      (.copyfileobj shutil r.raw f)))
    (except [e [requests.exceptions.RequestException]]
     (raise (LMSError (str e))))))
+ 
+ ; In addition, there is a shortcut URL to return the artwork of the currently playing song for a player:
+ ;    http://<server>:<port>/music/<wbr>current/cover.jpg?player=<<wbr>playerid>)))
 
  (defn remote-coverart [self url &kwonly [fname None]]
   "Fetch remote cover art from a provided LMS server.
@@ -63,6 +70,7 @@ Control LMS by the json RPC interface.
      (.copyfileobj shutil r.raw f)))
    (except [e [requests.exceptions.RequestException]]
     (raise (LMSError (str e)))))))
+
 
 (defn player-count [server]
  "Return number of players."
@@ -125,9 +133,13 @@ Control LMS by the json RPC interface.
  "Toggle the pause/play status of the player."
  (.send server [mac ["pause"]]))
 
-(defn seek [server mac seconds]
- "Seek some seconds forward or backward in the current song."
- (.send server [mac ["time" "{seconds :+d}"]]))
+(defn seek-forward [server mac]
+ "Seek some seconds forward in the current song."
+ (.send server [mac ["time" "+5"]]))
+
+(defn seek-backward [server mac]
+ "Seek some seconds backwards in the current song."
+ (.send server [mac ["time" "-5"]]))
 
 (defn artist [server mac]
  "Return track artist of current playlist item."
