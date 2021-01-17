@@ -53,7 +53,7 @@ Display panes for the LMS browser.
  (when shuffle (.put scr (+ 1 server-y) (+ 13 server-x) (cond [(= shuffle 2) "🔀️"]
                                                               [(= shuffle 1) "a🔀️"]
                                                               [:else ""])))
- (when wifi (.put scr (+ 1 server-y) (+ 16 server-x) f"wifi {wifi :3d}%"))
+ (when wifi (.put scr (+ 2 server-y) (+ 0 server-x) f"wifi {wifi :3d}%"))
  (when debug (debug-info scr status)))
 
 (defn playlist [scr status sel &kwonly [debug False]]
