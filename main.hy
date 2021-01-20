@@ -37,6 +37,7 @@ search pane
 
 
 (import curses)
+(import subprocess)
 (import [requests.exceptions [ConnectionError]])
 
 (import display)
@@ -66,6 +67,7 @@ search pane
  ["qh       -   back to players"
   "r        -   redraw screen"
   "c        -   toggle cover art display"
+  "n        -   toggle dbus/notify-send cover art display"
   ""
   "j/k      -   selection down/up in playlist"
   "g/G      -   selection first/last in playlist"
@@ -147,7 +149,7 @@ search pane
  (global debug)
  (setv running True
        sel 0
-       cover {:show False :coverid None :sixel None :displayed False :filename None :prev-track-id None})
+       cover {:show False :notify True :coverid None :sixel None :displayed False :filename None :prev-track-id None})
  (.clear scr)
  (while running
   (setv status (.status lms server player))
@@ -169,6 +171,7 @@ search pane
         [(in c "qh") (setv running False)]
         [(= c "r") (.clear scr) (.refresh scr) (assoc cover :displayed False)]
         [(= c "c") (.clear scr) (assoc cover :show (not (:show cover)))]
+        [(= c "n") (assoc cover :notify (not (:notify cover)))]
         [(= c "g") (setv sel 0)]
         [(= c "G") (setv sel (dec (len playlist)))]
         [(= c "+") (.volume-change lms server player 2)]
@@ -188,7 +191,7 @@ search pane
    (setv selected-index (get selected-track "playlist index"))
    (setv current-index (int (or (get-in status "playlist_cur_index") 0)))
    (setv current-track (first (filter (fn [track] (= (get track "playlist index") current-index)) playlist)))
-   (update-coverart scr server current-track cover)
+   (update-coverart scr server player current-track cover)
    (cond [(none? c)]
          [(= c "j") (setv sel (% (inc sel) (len playlist)))]
          [(= c "k") (setv sel (% (dec sel) (len playlist)))]
@@ -259,27 +262,33 @@ search pane
         [:else (setv running False)])))
 
 
-(defn update-coverart [scr server track cover]
+(defn update-coverart [scr server player track cover]
  "Fetch/show the cover art of the current track."
  ; cover {:coverid None :sixel None :last-coverid None :fresh False :filename ".."}
  ; get new cover art on new track
- (when (:show cover)
+ (when (or (:notify cover) (:show cover))
   (unless (= (:coverid cover) (get-in track "coverid"))
    (.message display scr (type (get track "remote")))
    (assoc cover :coverid (get-in track "coverid")
                 :filename f"/tmp/ncsb/ncsb-cover-{(:coverid cover)}.png"
                 :displayed False)
    (if (get-in track "artwork_url") (.remote-coverart server (get-in track "artwork_url") :fname (:filename cover))
-       (.coverart server (:coverid cover) 160 160 :fname (:filename cover))))
+       (.coverart server (:coverid cover) 320 320 :fname (:filename cover))))
   (unless (and (:displayed cover) (= (:prev-track-id cover) (get-in track "id")))
    (try
-    ; this causes a visible flash but gets the cursor in the right place
+    (when (:show cover)
+     ; this causes a visible flash but gets the cursor in the right place
+     (.locate-coverart display scr)
+     (-> cover
+      (:filename)
+      (sixel.show 140)
+      (display.coverart)))
+    (when (:notify cover)
+     (.call subprocess ["notify-send" "-i" (:filename cover)
+                        (.title lms server player)
+                        (.join "\n" [(.album lms server player)
+                                     (.artist lms server player)])]))
     (assoc cover :displayed True :prev-track-id (get-in track "id"))
-    (.locate-coverart display scr)
-    (-> cover
-     (:filename)
-     (sixel.show 160)
-     (display.coverart))
     (except [RuntimeError])))))
 
 
