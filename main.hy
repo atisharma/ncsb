@@ -268,7 +268,6 @@ search pane
  ; get new cover art on new track
  (when (or (:notify cover) (:show cover))
   (unless (= (:coverid cover) (get-in track "coverid"))
-   (.message display scr (type (get track "remote")))
    (assoc cover :coverid (get-in track "coverid")
                 :filename f"/tmp/ncsb/ncsb-cover-{(:coverid cover)}.png"
                 :displayed False)
@@ -286,10 +285,11 @@ search pane
     (when (:notify cover)
      (.call subprocess ["notify-send" "-i" (:filename cover)
                         (.title lms server player)
-                        (.join "\n" [(.album lms server player)
-                                     (.artist lms server player)])]))
+                        (.join "\n" (remove none?
+                                     [(.album lms server player)
+                                      (.artist lms server player)]))]))
     (assoc cover :displayed True :prev-track-id (get-in track "id"))
-    (except [RuntimeError])))))
+    (except [e [RuntimeError]] (.message display scr e))))))
 
 
 (defn main [&kwonly server-ip port]

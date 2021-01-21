@@ -143,15 +143,15 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 
 (defn artist [server mac]
  "Return track artist of current playlist item."
- (get-in (.send server [mac ["artist" "?"]]) "_artist"))
+ (or (get-in (.send server [mac ["artist" "?"]]) "_artist") ""))
 
 (defn album [server mac]
  "Return track album of current playlist item."
- (get-in (.send server [mac ["album" "?"]]) "_album"))
+ (or (get-in (.send server [mac ["album" "?"]]) "_album") ""))
 
 (defn title [server mac]
  "Return track title of current playlist item."
- (get-in (.send server [mac ["title" "?"]]) "_title"))
+ (or (get-in (.send server [mac ["title" "?"]]) "_title") ""))
 
 (defn track-duration [server mac]
  "Return track duration (in s) of current playlist item."
