@@ -154,7 +154,7 @@ search pane
  (while running
   (setv status (.status lms server player))
   (setv player-name (get status "player_name"))
-  (setv playlist (get-in status "playlist_loop"))
+  (setv playlist (or (get-in status "playlist_loop") []))
   (setv shuffle (get status "playlist shuffle"))
   (setv repeat_ (get status "playlist repeat"))
   (setv track-count (get status "playlist_tracks"))
@@ -164,7 +164,7 @@ search pane
   ; it is unknown why printing on y=1 interacts with the cover art to print in the wrong place
   (unless (:show cover) (.server display scr f"LMS v{(.version lms server)}"))
   (.refresh scr)
-  (setv sel (% sel (len playlist)))
+  (setv sel (if playlist (% sel (len playlist)) 0))
   (setv c (.getkey scr))
   (cond [(none? c)]
         [(= c "?") (help-loop scr (player-help))]
@@ -282,7 +282,7 @@ search pane
       (:filename)
       (sixel.show 140)
       (display.coverart)))
-    (when (:notify cover)
+    (when (and (:notify cover) (:filename cover))
      (.call subprocess ["notify-send" "-i" (:filename cover)
                         (.title lms server player)
                         (.join "\n" (remove none?
