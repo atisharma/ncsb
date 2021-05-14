@@ -59,7 +59,6 @@ Coverart requires libsixel to be installed on your system (presumably via your p
 
 ## Todo
 
-- file browser
 - play general URL (pasted in)
 - apps / podcast / menu
 - detailed track info
@@ -67,7 +66,7 @@ Coverart requires libsixel to be installed on your system (presumably via your p
 - vim-style commands?
 - colour themes
 - use events instead of polling
-- a better screencast
+- fix screencast
 - scrolling when text is too wide for terminal
 
 
