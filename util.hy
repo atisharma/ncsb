@@ -8,4 +8,3 @@ Various utility functions to handle data structures.
  (if (and (isinstance coll dict) args (in (first args) coll))
   (get-in (get coll (first args)) #* (rest args))
   (if args None coll)))
-

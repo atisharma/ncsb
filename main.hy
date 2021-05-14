@@ -180,6 +180,7 @@ search pane
         [(= c "A") (search-loop scr server player player-name "artists" (+ "search:" (.input scr "search artists")))]
         [(= c "B") (search-loop scr server player player-name "albums" (+ "search:" (.input scr "search albums")))]
         [(= c "/") (search-loop scr server player player-name "songs" (+ "search:" (.input scr "search songs")))]
+        [(= c "f") (browse-loop scr server player player-name :folder-id 0)]
         [(= c "s") (.stop lms server player)]
         [(= c "p") (.power lms server player "toggle")]
         [(= c "S") (.playlist-shuffle lms server player (% (+ 1 shuffle) 3))]
@@ -233,7 +234,7 @@ search pane
           [(in c "qh") (setv running False)]
           [(= c "r") (.clear scr)]
           [(= c "g") (setv sel 0)]
-          [(= c "G") (setv sel (dec (len playlist)))]
+          [(= c "G") (setv sel (dec (len results)))]
           [(= c "j") (setv sel (% (inc sel) (len results)))]
           [(= c "k") (setv sel (% (dec sel) (len results)))]
           [(= c "D") (setv debug (not debug))]
@@ -247,6 +248,42 @@ search pane
                                          [:else "load"])
                            :kind control-kind)
                          (setv running False)])))))
+
+
+(defn browse-loop [scr server player player-name &kwonly [folder-id 0]]
+ "Browse the library and add/insert/replace playlist."
+ (global debug)
+ (setv running True
+       sel 0)
+ (setv results (.browse lms server :folder-id folder-id))
+ (setv parent (get-in (first (.browse lms server :folder-id folder-id :return-top False)) "filename"))
+ (.clear scr)
+ (when results
+  (while running
+   (.browse-results display scr player-name results sel :parent parent :debug debug)
+   (setv selected-result (get results (% sel (len results))))
+   (setv kind (get selected-result "type")) ; folder or track
+   (setv filename (get selected-result "filename"))
+   (.refresh scr)
+   (setv c (.getkey scr))
+   (cond [(none? c)]
+         [(= c "?") (help-loop scr (browse-help))]
+         [(in c "qh") (setv running False)]
+         [(= c "r") (.clear scr)]
+         [(= c "g") (setv sel 0)]
+         [(= c "G") (setv sel (dec (len results)))]
+         [(= c "j") (setv sel (% (inc sel) (len results)))]
+         [(= c "k") (setv sel (% (dec sel) (len results)))]
+         [(= c "D") (setv debug (not debug))]
+         [(in c "l") (cond [(= kind "folder") (browse-loop scr server player player-name :folder-id (get-in selected-result "id"))]
+                          [(= kind "track") (search-loop scr server player player-name "artists" f"track_id:{(get-in selected-result \"id\")}")])]
+         [(in c "aip\n") (.playlist-control lms server player
+                          (get selected-result "id")
+                          :action (cond [(= c "a") "add"]
+                                        [(= c "i") "insert"]
+                                        [:else "load"])
+                          :kind kind)
+                        (setv running False)]))))
 
 
 (defn help-loop [scr help-text]

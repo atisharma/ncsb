@@ -110,6 +110,21 @@ Display panes for the LMS browser.
          [artist (.put scr (+ -2 y y-offset main-panel-y) (.centre scr artist) artist :style style)])
    (when debug (debug-info scr track)))))
 
+(defn browse-results [scr player-name results sel &kwonly [debug False] [parent "music folder"]]
+ "Display search results."
+ (.put scr title-y (.centre scr player-name) player-name :style scr.curses.A_BOLD :col 5)
+ (.put scr (+ 2 title-y) (.centre scr "search") parent :style scr.curses.A_BOLD :col 191)
+ (setv y-offset (min 0 (- (.bottom scr) (+ main-panel-y sel 1)))) 
+ (for [(, y result) (enumerate results)]
+  (when (>= (+ y y-offset) 0)
+   (setv style (if (= sel y) scr.curses.A_BOLD scr.curses.A_NORMAL))
+   (setv kind (get-in result "type"))  ; folder or track
+   (setv filename (get-in result "filename"))
+   (if (= kind "track")
+    (.put scr (+ -2 y y-offset main-panel-y) main-panel-x filename :style style :col 4)
+    (.put scr (+ -2 y y-offset main-panel-y) main-panel-x filename :style style))
+   (when debug (debug-info scr result)))))
+
 (defn track [scr title album artist]
  "Display current playlist item."
  (when title (.put scr (+ 2 title-y) (.centre scr title) title))

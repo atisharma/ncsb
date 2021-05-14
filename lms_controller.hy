@@ -265,8 +265,9 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
  "Return all information on a song."
  (.send server ["-" ["songinfo" 0 200 f"track_id:{track_id}"]]))
 
-(defn browse [server folder-id &kwonly [return-top False] [media-type "audio"]]
+(defn browse [server folder-id &kwonly [return-top True] [tags "o"]]
  "Browse a music library folder."
- (if return-top
-  (.send server ["-" ["musicfolder" 0 200 f"folder_id:{folder_id}"]])
-  (.send server ["-" ["musicfolder" 0 200 f"folder_id:{folder_id},return_top:1"]])))
+ (get-in (if return-top
+          (.send server ["-" ["musicfolder" 0 200 f"folder_id:{folder_id}" f"tags:{tags}"]])
+          (.send server ["-" ["musicfolder" 0 200 f"folder_id:{folder_id}" f"tags:{tags}" "return_top:1"]]))
+         "folder_loop"))
