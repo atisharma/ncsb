@@ -89,6 +89,7 @@ search pane
   "A        -   text search for artists"
   "B        -   text search for albums"
   "/        -   text search for tracks"
+  "f        -   browse music folder"
   ""
   "b        -   albums by artist of selected song"
   "t        -   tracks by artist of selected song"
@@ -108,6 +109,21 @@ search pane
   "p/<ret>  -   replace playlist with selected item"
   ""
   "//l      -   contextual search on selected item"
+  ""
+  "?        -   show this help"])
+
+(defn browse-help []
+ ["qh       -   back to parent folder"
+  "r        -   redraw screen"
+  ""
+  "j/k      -   down/up in search results"
+  "g/G      -   first/last in search results"
+  ""
+  "a        -   add selected item to end of playlist"
+  "i        -   insert selected item in playlist"
+  "p/<ret>  -   replace playlist with selected item"
+  ""
+  "l        -   browse folder"
   ""
   "?        -   show this help"])
 
