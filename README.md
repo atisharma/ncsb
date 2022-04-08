@@ -29,7 +29,7 @@ In any screen, press `?` for available commands.
 
 ## Installation
 
-Requires python 3 (tested on 3.9), with python packages requests, hy and (for optional coverart) libsixel-python.
+Requires python 3 (tested on 3.9), with python packages requests, hy (0.20.0) and (for optional coverart) libsixel-python.
 
 To install these with pip into your current environment (venv etc...),
 ```
@@ -44,9 +44,9 @@ or with `xterm*decTerminalID : vt340` in `.Xresources`.
 
 
 If you are seeing boxes or junk instead of nice unicode symbols for play/pause etc, you need to use a font with more complete unicode support.
-I use Hack.
+Hack works well.
 
-Coverart requires libsixel to be installed on your system (presumably via your package manager) and a sixel-supporting terminal.
+In-terminal coverart requires libsixel to be installed on your system (presumably via your package manager) and a sixel-supporting terminal. Cover art notifications require libnotify to be installed.
 
 
 ## Bugs

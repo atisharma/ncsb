@@ -1,11 +1,9 @@
-#!/usr/bin/env python
-
 import hy
 import sys
 
 from main import main
 
-if __name__ == "__main__":
+def cli():
     if len(sys.argv) == 2:
         cmd, ip = sys.argv
         port = 9000
