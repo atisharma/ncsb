@@ -40,11 +40,11 @@ search pane
 (import subprocess)
 (import [requests.exceptions [ConnectionError]])
 
-(import display)
-(import [lms-controller :as lms])
-(import [screen [screen]])
-(import [util [get-in]])
-(import sixel)
+(import [ncsb.display :as display])
+(import [ncsb.lms-controller :as lms])
+(import [ncsb.screen [screen]])
+(import [ncsb.util [get-in]])
+(import [ncsb.sixel :as sixel])
 
 (setv debug False)
 

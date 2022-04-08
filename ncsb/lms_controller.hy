@@ -10,7 +10,7 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 (import shutil)
 (import [pathlib [Path]])
 
-(import [util [get-in]])
+(import [ncsb.util [get-in]])
 
 (defclass LMSError [Exception])
 

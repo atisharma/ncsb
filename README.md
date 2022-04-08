@@ -20,9 +20,14 @@
 
 with dependencies available to your environment,
 ```
-$ python3 ncsb LMS-server-ip
+$ ncsb lms-server
 ```
-where `LMS-server-ip` is the IP address or hostname of your LMS server.
+where `lms-server` is the hostname or IP address of your LMS server.
+
+To use a port other than the default 9000, use the `--port` or `-p` optional argument,
+```
+$ ncsb -p 9090 lms-server
+```
 
 In any screen, press `?` for available commands.
 

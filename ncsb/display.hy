@@ -6,7 +6,7 @@ Display panes for the LMS browser.
 ; some useful unicode symbols
 "▶️ ⏸️ ⏯️ ◀️ ⏹️ ⏪️ ⏩️ ⏮️ ⏏️ 🔀️ 🔁️ 🔃️ 🔂️ ℹ️ 🔄️ ⏻ ⏼ ⏽ ⭘ ⏾ 🔊"
 
-(import [util [get-in]])
+(import [ncsb.util [get-in]])
 
 (setv main-panel-y 9)
 (setv main-panel-x 2)
