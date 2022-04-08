@@ -62,7 +62,6 @@ In-terminal coverart requires libsixel to be installed on your system (presumabl
 - play general URL (pasted in)
 - apps / podcast / menu
 - detailed track info
-- standard python packaging
 - vim-style commands?
 - colour themes
 - use events instead of polling
