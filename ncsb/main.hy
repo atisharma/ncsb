@@ -208,7 +208,9 @@ search pane
    (setv selected-index (get selected-track "playlist index"))
    (setv current-index (int (or (get-in status "playlist_cur_index") 0)))
    (setv current-track (first (filter (fn [track] (= (get track "playlist index") current-index)) playlist)))
-   (update-coverart scr server player current-track cover)
+   (try
+    (update-coverart scr server player current-track cover)
+    (except [e [lms.LMSError]] (.message display scr e)))
    (cond [(none? c)]
          [(= c "j") (setv sel (% (inc sel) (len playlist)))]
          [(= c "k") (setv sel (% (dec sel) (len playlist)))]

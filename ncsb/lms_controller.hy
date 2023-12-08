@@ -53,7 +53,7 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
    (with [r (.get requests url :stream True)]
     (with [f (open (or fname f"/tmp/ncsb/{coverid}.png") "wb")]
      (.copyfileobj shutil r.raw f)))
-   (except [e [requests.exceptions.RequestException]]
+   (except [e [requests.exceptions.RequestException FileNotFoundError]]
     (raise (LMSError (str e))))))
  
  ; In addition, there is a shortcut URL to return the artwork of the currently playing song for a player:
@@ -68,7 +68,7 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
    (with [r (.get requests url :stream True)]
     (with [f (open (or fname f"/tmp/ncsb/remote.png") "wb")]
      (.copyfileobj shutil r.raw f)))
-   (except [e [requests.exceptions.RequestException]]
+   (except [e [requests.exceptions.RequestException FileNotFoundError]]
     (raise (LMSError (str e)))))))
 
 
