@@ -258,7 +258,7 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 
 (defn search [server mac kind params]
  "Search on a general term.
- kind is one of artits, albums, songs, tracks, playlists."
+ kind is one of artists, albums, songs, tracks, playlists."
  (.send server [mac [kind 0 100 params]]))
 
 (defn songinfo [server track_id]
