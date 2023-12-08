@@ -47,9 +47,9 @@ def playing():
             if mode == "play":
                 print(f"⏵ {album} / {title} {elapsed_fraction:.0%}")
             elif mode == "stop":
-                printf("⏹")
+                print("⏹")
             elif mode == "pause":
-                printf("⏸")
+                print("⏸")
                 
                     
 
