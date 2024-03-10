@@ -12,9 +12,13 @@
 
 ## Screenshot / screencast
 
+### players
 
-[![ncsb asciicast](https://asciinema.org/a/9VnHLFTGGZ2JNEhBdgXkuKOzp.png)](https://asciinema.org/a/9VnHLFTGGZ2JNEhBdgXkuKOzp?autoplay=1&speed=1.5)
-
+![players screen](screenshots/players.png)
+![playlist screen](screenshots/playlist.png)
+![another playlist screen](screenshots/playlist-2.png)
+![search screen](screenshots/search.png)
+![search results screen](screenshots/search_results.png)
 
 ## Usage
 
