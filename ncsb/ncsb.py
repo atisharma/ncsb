@@ -45,7 +45,7 @@ def playing():
                 indent=4))
         else:
             if mode == "play":
-                print(f"⏵ {album} / {title} {elapsed_fraction:.0%}")
+                print(f"⏵ {album} / {title} - {elapsed_fraction:.0%}")
             elif mode == "stop":
                 print("⏹")
             elif mode == "pause":

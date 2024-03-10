@@ -51,7 +51,7 @@ search pane
 
 (setv debug False)
 
-(setv copyright "(c) ncsb authors 2021-2023")
+(setv copyright "(c) ncsb authors 2021-2024")
 
 (defn server-help []
   ["q        -   quit"
