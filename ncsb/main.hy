@@ -35,9 +35,10 @@ search pane
 
 "
 
-(require hyrule [assoc])
 (require hyrule.argmove [-> ->> as->])
 (require hyrule.control [unless])
+
+(import hyrule [assoc])
 
 (import curses)
 (import subprocess)
