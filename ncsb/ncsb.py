@@ -8,14 +8,14 @@ import ncsb.lms_controller as lms
 
 
 def cli():
-    parser = argparse.ArgumentParser(description="An ncurses squeezebox controller for the Logitech Media Server (LMS)")
+    parser = argparse.ArgumentParser(description="An ncurses squeezebox controller for Lyrion / the Logitech Media Server (LMS)")
     parser.add_argument("server", type=str, help="IP address or network name of server")
     parser.add_argument("--port", "-p", type=int, default=9000, help="server port (usually 9000)")
     args = parser.parse_args()
     main(server_ip=args.server, port=args.port)
 
 def playing():
-    parser = argparse.ArgumentParser(description="An ncurses squeezebox controller for the Logitech Media Server (LMS)")
+    parser = argparse.ArgumentParser(description="An ncurses squeezebox controller for the Lyrion / Logitech Media Server (LMS)")
     parser.add_argument("server", type=str, help="IP address or network name of server")
     parser.add_argument("mac", type=str, help="mac address of player (playerid)")
     parser.add_argument("--port", "-p", type=int, default=9000, help="server port (usually 9000)")

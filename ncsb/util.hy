@@ -1,6 +1,6 @@
-"""
+"
 Various utility functions to handle data structures.
-"""
+"
 
 (import hyrule [inc dec rest butlast starmap distinct])
 (import itertools [repeat filterfalse :as remove])
@@ -22,5 +22,5 @@ Various utility functions to handle data structures.
 (defn get-in [coll #* args]
   "A get that returns None in case of missing keys."
   (if (and (isinstance coll dict) args (in (first args) coll))
-      (get-in (get coll (first args)) #* (rest args))
-      (if args None coll)))
+    (get-in (get coll (first args)) #* (rest args))
+    (if args None coll)))

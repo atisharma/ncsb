@@ -1,9 +1,9 @@
-"""
+"
 Display panes for the LMS browser.
 
-"""
+"
 
-; some useful unicode symbols
+;; some useful unicode symbols
 "▶️ ⏸️ ⏯️ ◀️ ⏹️ ⏪️ ⏩️ ⏮️ ⏏️ 🔀️ 🔁️ 🔃️ 🔂️ ℹ️ 🔄️ ⏻ ⏼ ⏽ ⭘ ⏾ 🔊"
 
 (import ncsb.util [get-in none? remove repeat])
@@ -25,14 +25,14 @@ Display panes for the LMS browser.
 (defn players [scr player-list sel * [debug False]]
   "Show the players in the player list."
   (for [#( y p) (enumerate player-list)]
-     (setv player-name (get p "name"))
-     (when (= sel y) (.put scr title-y (.centre scr player-name) player-name :style scr.curses.A_BOLD :col 5))
-     (setv style (if (= sel y) scr.curses.A_BOLD scr.curses.A_NORMAL))
-     (.put scr (+ y main-panel-y) main-panel-x "•" :col (if (get p "connected") 3 2))
-     (.put scr (+ y main-panel-y) (+ 2 main-panel-x) "⏼" :col (if (get p "power") 3 2))
-     (.put scr (+ y main-panel-y) (+ 4 main-panel-x) (if (get p "isplaying") "▶️ " "⏹️ ") :col (if (get p "isplaying") 3 2))
-     (.put scr (+ y main-panel-y) (+ 6 main-panel-x) f" {player-name :<20}" :style style)
-     (when (and debug (= sel y) (debug-info scr p)))))
+    (setv player-name (get p "name"))
+    (when (= sel y) (.put scr title-y (.centre scr player-name) player-name :style scr.curses.A_BOLD :col 5))
+    (setv style (if (= sel y) scr.curses.A_BOLD scr.curses.A_NORMAL))
+    (.put scr (+ y main-panel-y) main-panel-x "•" :col (if (get p "connected") 3 2))
+    (.put scr (+ y main-panel-y) (+ 2 main-panel-x) "⏼" :col (if (get p "power") 3 2))
+    (.put scr (+ y main-panel-y) (+ 4 main-panel-x) (if (get p "isplaying") "▶️ " "⏹️ ") :col (if (get p "isplaying") 3 2))
+    (.put scr (+ y main-panel-y) (+ 6 main-panel-x) f" {player-name :<20}" :style style)
+    (when (and debug (= sel y) (debug-info scr p)))))
 
 (defn player [scr status * [debug False]]
   "Display for the current player."
@@ -44,15 +44,15 @@ Display panes for the LMS browser.
   (setv repeat_ (get status "playlist repeat"))
   (.put scr title-y (.centre scr player-name) player-name :style scr.curses.A_BOLD :col 5)
   (.put scr (+ 1 server-y) (+ 0 server-x) f"🔊{volume :3.0f}%")
-  (.put scr (+ 1 server-y) (+ 8 server-x) (cond (= mode "play") "▶️ "
-                                                (= mode "stop") "⏹️ "
-                                                (= mode "pause") "⏸️ "))
-  (when repeat_ (.put scr (+ 1 server-y) (+ 10 server-x) (cond (= repeat_ 2) "🔁️"
-                                                               (= repeat_ 1) "🔂️"
-                                                               :else "")))
-  (when shuffle (.put scr (+ 1 server-y) (+ 13 server-x) (cond (= shuffle 2) "🔀️"
-                                                               (= shuffle 1) "a🔀️"
-                                                               :else "")))
+  (.put scr (+ 1 server-y) (+ 8 server-x) (cond (= mode "play") "▶️ "))
+  (= mode "stop") "⏹️ "
+  (= mode "pause") "⏸️ "
+  (when repeat_ (.put scr (+ 1 server-y) (+ 10 server-x) (cond (= repeat_ 2) "🔁️")))
+  (= repeat_ 1) "🔂️"
+  :else ""
+  (when shuffle (.put scr (+ 1 server-y) (+ 13 server-x) (cond (= shuffle 2) "🔀️")))
+  (= shuffle 1) "a🔀️"
+  :else ""
   (when wifi (.put scr (+ 2 server-y) (+ 0 server-x) f"wifi {wifi :3d}%"))
   (when debug (debug-info scr status)))
 
@@ -69,25 +69,25 @@ Display panes for the LMS browser.
         (setv is-current (= (int (get status "playlist_cur_index")) (int (get track "playlist index"))))
         (setv elapsed-str (if is-current f"[{(* 100 elapsed) :2.0f}%]" ""))
         (setv col (if is-current
-                      (cond (= mode "play") 3
-                            (= mode "stop") 2
-                            (= mode "pause") 4
-                            :else 5)
-                      0))
+                    (cond (= mode "play") 3
+                          (= mode "stop") 2
+                          (= mode "pause") 4
+                          :else 5)
+                    0))
         (.put scr (+ y y-offset main-panel-y) main-panel-x
-                  f"{(get track "playlist index") :>2d} - {(get track "title") :<40}"
-                  :col col
-                  :style style)
+              f"{(get track "playlist index") :>2d} - {(get track "title") :<40}"
+              :col col
+              :style style)
         (.put scr (+ y y-offset main-panel-y) (min (- (.right scr :s elapsed-str) 2) 100)
-                  f"{elapsed-str}"
-                  :col col
-                  :style style))
+              f"{elapsed-str}"
+              :col col
+              :style style))
       (when (= sel y)
-         (.put scr (- main-panel-y 2) (+ 1 main-panel-x)
-                   (.join " - " (list (map str (remove none? (map get-in (repeat track) ["artist" "album" "tracknum" "bitrate" "type"])))))
-                   :style (| scr.curses.A_ITALIC scr.curses.A_BOLD))) 
+        (.put scr (- main-panel-y 2) (+ 1 main-panel-x)
+              (.join " - " (list (map str (remove none? (map get-in (repeat track) ["artist" "album" "tracknum" "bitrate" "type"])))))
+              :style (| scr.curses.A_ITALIC scr.curses.A_BOLD))) 
       (when (and (= sel y) debug)
-           (debug-info scr track :y0 main-panel-y :x0 (+ 100 main-panel-x))))))
+        (debug-info scr track :y0 main-panel-y :x0 (+ 100 main-panel-x))))))
 
 (defn search-results [scr player-name results term kind sel * [debug False]]
   "Display search results."
@@ -122,8 +122,8 @@ Display panes for the LMS browser.
       (setv kind (get-in result "type"))  ; folder or track
       (setv filename (get-in result "filename"))
       (if (= kind "track")
-          (.put scr (+ -2 y y-offset main-panel-y) main-panel-x filename :style style :col 4)
-          (.put scr (+ -2 y y-offset main-panel-y) main-panel-x filename :style style))
+        (.put scr (+ -2 y y-offset main-panel-y) main-panel-x filename :style style :col 4)
+        (.put scr (+ -2 y y-offset main-panel-y) main-panel-x filename :style style))
       (when debug (debug-info scr result)))))
 
 (defn track [scr title album artist]
@@ -135,13 +135,13 @@ Display panes for the LMS browser.
 (defn help [scr lines]
   "Display long text in the main panel."
   (for [#( y line) (enumerate lines)]
-     (.put scr (+ y title-y) main-panel-x line))) 
+    (.put scr (+ y title-y) main-panel-x line))) 
 
 (defn coverart [sixel-string]
   "Display the cover art via sixel.
- We bypass curses and print directly to screen in the desired position."
+  We bypass curses and print directly to screen in the desired position."
   (when sixel-string
-     (print sixel-string)))
+    (print sixel-string)))
 
 (defn locate-coverart [scr]
   "Dirty hack to place cover art in the right place."
@@ -159,8 +159,8 @@ Display panes for the LMS browser.
 (defn debug-info [scr records [x0 info-panel-x] [y0 info-panel-y]]
   "Dump a list of dicts for debugging."
   (if (isinstance records dict)
-      (for [#( y #( k v)) (enumerate (sorted (.items records)))]
-        (.put scr (+ y y0) x0 k)
-        (.put scr (+ y y0) (+ 30 x0) v))
-      (for [#( y r) (enumerate records)]
-        (.put scr (+ y y0) x0 (sorted (.items r))))))
+    (for [#( y #( k v)) (enumerate (sorted (.items records)))]
+      (.put scr (+ y y0) x0 k)
+      (.put scr (+ y y0) (+ 30 x0) v))
+    (for [#( y r) (enumerate records)]
+      (.put scr (+ y y0) x0 (sorted (.items r))))))

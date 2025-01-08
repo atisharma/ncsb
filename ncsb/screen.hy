@@ -12,47 +12,45 @@ A simple curses display class.
 
 
 (defclass screen []
-  """
- Manage the display.
- """
+  "Manage the display."
 
   (defn __init__ [self stdscr * [nodelay True] [halfdelay False]]
-     (setv self.stdscr stdscr)
-     (setv self.curses curses)
-     (.curs_set curses False)
-     (.nodelay stdscr nodelay)
-     (when halfdelay (.halfdelay curses halfdelay))
-     (.start_color curses)
-     (.use_default_colors curses)
-     (for [i (range 0 curses.COLORS)]
+    (setv self.stdscr stdscr)
+    (setv self.curses curses)
+    (.curs_set curses False)
+    (.nodelay stdscr nodelay)
+    (when halfdelay (.halfdelay curses halfdelay))
+    (.start_color curses)
+    (.use_default_colors curses)
+    (for [i (range 0 curses.COLORS)]
       (.init_pair curses (+ i 1) i -1))
-     (setv self.window (.newwin curses curses.LINES curses.COLS))
-     (self.clear)
-     (setv self.warnings [])
-     (setv self.errors [])
-     (setv self.infos [])
-     (setv self.debugs []))
+    (setv self.window (.newwin curses curses.LINES curses.COLS))
+    (self.clear)
+    (setv self.warnings [])
+    (setv self.errors [])
+    (setv self.infos [])
+    (setv self.debugs []))
 
   (defn __del__ [self]
-     (.clear self.stdscr)
-     (.curs_set curses True))
+    (.clear self.stdscr)
+    (.curs_set curses True))
 
   (defn __enter__ [self]
-     self)
+    self)
 
   (defn __exit__ [self exc-type exc-val exc-tb])
 
   (defn clear [self]
-                                ;(.cbreak curses)
-                                ;(.noecho curses)
-     (.clear self.stdscr)
-     (.refresh self.stdscr)
-     (.update_lines_cols curses)
-     (.resize self.window curses.LINES curses.COLS)
-     (setv self.warnings [])
-     (setv self.errors [])
-     (setv self.infos [])
-     (setv self.debugs []))
+    ;(.cbreak curses)
+    ;(.noecho curses)
+    (.clear self.stdscr)
+    (.refresh self.stdscr)
+    (.update_lines_cols curses)
+    (.resize self.window curses.LINES curses.COLS)
+    (setv self.warnings [])
+    (setv self.errors [])
+    (setv self.infos [])
+    (setv self.debugs []))
 
   (defn clear_line [self y]
     (try
@@ -61,8 +59,8 @@ A simple curses display class.
       (except [curses.error])))
 
   (defn refresh [self]
-     (.refresh self.window)
-     (.erase self.window))
+    (.refresh self.window)
+    (.erase self.window))
 
   (defn getkey [self]
     (try
@@ -82,49 +80,47 @@ A simple curses display class.
         (except [curses.error]))))
 
   (defn input [self [prompt ""]]
-     """
-  Get single-line input in a text box.
-  """
-     (setv y (- curses.LINES 2))
-     (setv x (+ 4 (len prompt)))
-     (.put self y 1 f"/{prompt}:" :col 191)
-     (.refresh self.window)
-     (setv tw (.newwin curses 1 (- curses.COLS 1) y x))
-     (.bkgdset tw (| (.color_pair curses 191) curses.A_BOLD curses.A_ITALIC))
-     (setv tb (.Textbox textpad tw :insert-mode True))
-     (.edit tb (fn [x] (if (= x 10) 7 x)))
-     (setv instr (-> tb (.gather) (.strip)))
-     (.clear tw)
-     (del tw)
-     instr)
+    "Get single-line input in a text box."
+    (setv y (- curses.LINES 2))
+    (setv x (+ 4 (len prompt)))
+    (.put self y 1 f"/{prompt}:" :col 191)
+    (.refresh self.window)
+    (setv tw (.newwin curses 1 (- curses.COLS 1) y x))
+    (.bkgdset tw (| (.color_pair curses 191) curses.A_BOLD curses.A_ITALIC))
+    (setv tb (.Textbox textpad tw :insert-mode True))
+    (.edit tb (fn [x] (if (= x 10) 7 x)))
+    (setv instr (-> tb (.gather) (.strip)))
+    (.clear tw)
+    (del tw)
+    instr)
 
   (defn centre [self s]
-     (setv #( y x) (.getmaxyx self.stdscr))
-     (int (/ (- x (len s)) 2)))
+    (setv #( y x) (.getmaxyx self.stdscr))
+    (int (/ (- x (len s)) 2)))
 
   (defn right [self * [s " "]]
-     (setv [y x] (.getmaxyx self.stdscr))
-     (int (- x (len s) 1)))
+    (setv [y x] (.getmaxyx self.stdscr))
+    (int (- x (len s) 1)))
 
   (defn bottom [self]
-     (setv [y x] (.getmaxyx self.stdscr))
-     (- y 2))
+    (setv [y x] (.getmaxyx self.stdscr))
+    (- y 2))
 
   (defn warning [self #* strings]
-     (for [s strings]
+    (for [s strings]
       (.append self.warnings s)))
 
   (defn error [self #* strings]
-     (for [s strings]
+    (for [s strings]
       (.append self.errors s)))
 
   (defn info [self #* strings]
-     (for [s strings]
+    (for [s strings]
       (.append self.infos s)))
-  
+
   (defn debug[self #* strings]
-     (for [s strings]
+    (for [s strings]
       (.append self.debugs s)))
 
   (defn isEnabledFor [self x]
-     (not (= x logging.DEBUG))))
+    (not (= x logging.DEBUG))))

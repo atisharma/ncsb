@@ -1,10 +1,10 @@
-"""
+"
 Control LMS by the json RPC interface.
 
 LMS API documentation is at
 http://lms-vm:9000/html/doc/cli-api.html
 https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
-"""
+"
 
 (require hyrule.argmove [-> ->> as->])
 (require hyrule.control [unless])
@@ -20,59 +20,59 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 
 (defclass Server []
   "Context manager for LMS connection."
-  
+
   (defn __init__ [self server [port 9000]]
-     (setv self.url f"http://{server}:{port}/jsonrpc.js")
-     (setv self.ip server)
-     (setv self.port port)
-     (.mkdir (Path "{tempdir}") :parents True :exist-ok True))
+    (setv self.url f"http://{server}:{port}/jsonrpc.js")
+    (setv self.ip server)
+    (setv self.port port)
+    (.mkdir (Path "{tempdir}") :parents True :exist-ok True))
 
   (defn __del__ [self])
 
   (defn __enter__ [self]
-     self)
+    self)
 
   (defn __exit__ [self exc-type exc-val exc-tb]
-     (.rmtree shutil "{tempdir}" :ignore-errors True))
+    (.rmtree shutil "{tempdir}" :ignore-errors True))
 
   (defn send [self command]
     "Send a command list to the LMS server.
-  These are nested lists of format
+    These are nested lists of format
     [player-id [cmd1 arg1 arg2...]].
-  The player id is the mac address or - for the server."
+    The player id is the mac address or - for the server."
     (setv payload {"method" "slim.request" "params" command})
     (try
       (-> (.post requests self.url :json payload)
-          (.json)
-          (get "result"))
+        (.json)
+        (get "result"))
       (except [e [requests.exceptions.RequestException]]
         (raise (LMSError (str e))))))
 
   (defn coverart [self coverid [h 200] [w 200] * [fname None]]
-     "Fetch the cover art from the LMS server.
-  Save to fname or {tempdir}/{coverid}.png."
-     (setv url f"http://{self.ip}:{self.port}/music/{coverid}/cover_{h}x{w}.png")
-     (try
+    "Fetch the cover art from the LMS server.
+    Save to fname or {tempdir}/{coverid}.png."
+    (setv url f"http://{self.ip}:{self.port}/music/{coverid}/cover_{h}x{w}.png")
+    (try
       (with [r (.get requests url :stream True)]
-           (with [f (open (or fname f"{tempdir}/{coverid}.png") "wb")]
-             (.copyfileobj shutil r.raw f)))
+        (with [f (open (or fname f"{tempdir}/{coverid}.png") "wb")]
+          (.copyfileobj shutil r.raw f)))
       (except [e [requests.exceptions.RequestException FileNotFoundError]]
-           (raise (LMSError (str e))))))
-  
-                                ; In addition, there is a shortcut URL to return the artwork of the currently playing song for a player:
-                                ;    http://<server>:<port>/music/<wbr>current/cover.jpg?player=<<wbr>playerid>)))
+        (raise (LMSError (str e))))))
+
+  ;; In addition, there is a shortcut URL to return the artwork of the currently playing song for a player:
+  ;;    http://<server>:<port>/music/<wbr>current/cover.jpg?player=<<wbr>playerid>)))
 
   (defn remote-coverart [self url * [fname None]]
-     "Fetch remote cover art from a provided LMS server.
-  Save to fname or {tempdir}/remote.png."
-                                 ; If not http in url, it's a local url which needs expanding.
-     (unless (in "http" url) (setv url f"http://{self.ip}:{self.port}/{url}"))
-     (try
+    "Fetch remote cover art from a provided LMS server.
+    Save to fname or {tempdir}/remote.png."
+    ;; If not http in url, it's a local url which needs expanding.
+    (unless (in "http" url) (setv url f"http://{self.ip}:{self.port}/{url}"))
+    (try
       (with [r (.get requests url :stream True)]
-           (with [f (open (or fname f"{tempdir}/remote.png") "wb")]
-             (.copyfileobj shutil r.raw f)))
+        (with [f (open (or fname f"{tempdir}/remote.png") "wb")]
+          (.copyfileobj shutil r.raw f)))
       (except [e [requests.exceptions.RequestException FileNotFoundError]]
-           (raise (LMSError (str e)))))))
+        (raise (LMSError (str e)))))))
 
 
 (defn player-count [server]
@@ -82,9 +82,9 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 (defn players [server]
   "Return a list of player dicts."
   (as-> server x
-         (player-count x)
-         (.send server ["-" ["players" "0" x]])
-         (get-in x "players_loop")))
+    (player-count x)
+    (.send server ["-" ["players" "0" x]])
+    (get-in x "players_loop")))
 
 (defn rescan-progress [server]
   "Return progress of a rescan."
@@ -173,8 +173,8 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
   (setv elapsed (track-elapsed server mac))
   (setv duration (track-duration server mac))
   (if (or (isinstance elapsed str) (isinstance duration str))
-      0
-      (/ elapsed duration)))
+    0
+    (/ elapsed duration)))
 
 
 (defn volume [server mac volume]
@@ -193,17 +193,17 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 (defn playlist-skip [server mac]
   "Play next item in playlist."
   (playlist-play-index server mac
-                        (-> (playlist-position server mac)
-                            (int)
-                            (+ 1))))
+                       (-> (playlist-position server mac)
+                         (int)
+                         (+ 1))))
 
 (defn playlist-prev [server mac]
   "Play previous item in playlist."
   (playlist-play-index server mac
-                        (-> (playlist-position server mac)
-                            (int)
-                            (- 1)
-                            (max 0))))
+                       (-> (playlist-position server mac)
+                         (int)
+                         (- 1)
+                         (max 0))))
 
 (defn playlist-jump [server mac n]
   "Jump to index n in the playlist."
@@ -247,7 +247,7 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 
 (defn playlist-control [server mac item * [action "load"] [kind "track"]]
   "Play (load), insert or add an item to a playlist where item is the id
- and kind is one of album, artist or track."
+  and kind is one of album, artist or track."
   (.send server [mac ["playlistcontrol" f"cmd:{action}" f"{kind}_id:{item}"]]))
 
 
@@ -261,7 +261,7 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 
 (defn search [server mac kind params]
   "Search on a general term.
- kind is one of artists, albums, songs, tracks, playlists."
+  kind is one of artists, albums, songs, tracks, playlists."
   (.send server [mac [kind 0 100 params]]))
 
 (defn songinfo [server track_id]
@@ -271,6 +271,6 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 (defn browse [server folder-id * [return-top True] [tags "o"]]
   "Browse a music library folder."
   (get-in (if return-top
-               (.send server ["-" ["musicfolder" 0 200 f"folder_id:{folder_id}" f"tags:{tags}"]])
-               (.send server ["-" ["musicfolder" 0 200 f"folder_id:{folder_id}" f"tags:{tags}" "return_top:1"]]))
+            (.send server ["-" ["musicfolder" 0 200 f"folder_id:{folder_id}" f"tags:{tags}"]])
+            (.send server ["-" ["musicfolder" 0 200 f"folder_id:{folder_id}" f"tags:{tags}" "return_top:1"]]))
           "folder_loop"))

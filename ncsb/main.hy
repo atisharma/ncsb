@@ -1,39 +1,39 @@
 "An experimental LMS browser.
 
-A S Sharma (C) 2021
-Licensed under the GNU GENERAL PUBLIC LICENSE v3
+ A S Sharma (C) 2021
+ Licensed under the GNU GENERAL PUBLIC LICENSE v3
 
-Press ? for help.
+ Press ? for help.
 
-Each pane (mode) has its own display and loop.
-
-
-players pane
-------------
-
-  1. player | currently playing | on/off
-  2. player | currently playing | on/off
-* 3. player | currently playing | on/off
-  4. player | currently playing | on/off
+ Each pane (mode) has its own display and loop.
 
 
-playlist pane
---------------
+ players pane
+ ------------
 
-player | on/off | volume
-
-playlist
-  1. ...
-  2. ...
-* 3. ...  (show % complete)
-  4. ...
+ 1. player | currently playing | on/off
+ 2. player | currently playing | on/off
+ * 3. player | currently playing | on/off
+ 4. player | currently playing | on/off
 
 
-search pane
------------
-(selection replaces (p, <ret>), appends to (a) or inserts (i) in playlist)
+ playlist pane
+ --------------
 
-"
+ player | on/off | volume
+
+ playlist
+ 1. ...
+ 2. ...
+ * 3. ...  (show % complete)
+ 4. ...
+
+
+ search pane
+ -----------
+ (selection replaces (p, <ret>), appends to (a) or inserts (i) in playlist)
+
+ "
 
 (require hyrule.argmove [-> ->> as->])
 (require hyrule.control [unless])
@@ -55,7 +55,8 @@ search pane
 (setv copyright "(c) ncsb authors 2021-2024")
 
 (defn server-help []
-  ["q        -   quit"
+  [
+   "q        -   quit"
    "r        -   redraw screen"
    ""
    "j/k      -   down/up in player list"
@@ -68,7 +69,8 @@ search pane
    "?        -   show this help"])
 
 (defn player-help []
-  ["qh       -   back to players"
+  [
+   "qh       -   back to players"
    "r        -   redraw screen"
    "c        -   toggle cover art display"
    "n        -   toggle dbus/notify-send cover art display"
@@ -102,7 +104,8 @@ search pane
    "?        -   show this help"])
 
 (defn search-help []
-  ["qh       -   back to playlist"
+  [
+   "qh       -   back to playlist"
    "r        -   redraw screen"
    ""
    "j/k      -   down/up in search results"
@@ -117,7 +120,8 @@ search pane
    "?        -   show this help"])
 
 (defn browse-help []
-  ["qh       -   back to parent folder"
+  [
+   "qh       -   back to parent folder"
    "r        -   redraw screen"
    ""
    "j/k      -   down/up in search results"
@@ -138,30 +142,30 @@ search pane
   (setv running True
         sel 0)
   (with [server (lms.Server server-ip port)]
-     (with [scr (screen stdscr :nodelay False :halfdelay 10)]
+    (with [scr (screen stdscr :nodelay False :halfdelay 10)]
       (while running
-           (try
-             (setv players (.players lms server))
-             (setv player (get players sel "playerid"))
-             (.players display scr players sel :debug debug)
-             (.server display scr f"LMS v{(.version lms server)}")
-             (.track display scr (.title lms server player) (.artist lms server player) (.album lms server player))
-             (.refresh scr)
-             (setv c (.getkey scr))
-             (cond (none? c) None
-                   (= c "?") (help-loop scr (server-help))
-                   (= c "q") (setv running False)
-                   (= c "r") (.clear scr)
-                   (= c "j") (setv sel (% (inc sel) (len players)))
-                   (= c "k") (setv sel (% (dec sel) (len players)))
-                   (= c "g") (setv sel 0)
-                   (= c "G") (setv sel (dec (len players)))
-                   (= c " ") (.pause lms server player)
-                   (= c "p") (.power lms server player "toggle")
-                   (= c "D") (setv debug (not debug))
-                   (in c "l\n") (player-loop scr server player))
-             (except [KeyboardInterrupt] (setv running False))
-             (except [e [lms.LMSError]] (.error display scr e)))))))
+        (try
+          (setv players (.players lms server))
+          (setv player (get players sel "playerid"))
+          (.players display scr players sel :debug debug)
+          (.server display scr f"LMS v{(.version lms server)}")
+          (.track display scr (.title lms server player) (.artist lms server player) (.album lms server player))
+          (.refresh scr)
+          (setv c (.getkey scr))
+          (cond (none? c) None
+                (= c "?") (help-loop scr (server-help))
+                (= c "q") (setv running False)
+                (= c "r") (.clear scr)
+                (= c "j") (setv sel (% (inc sel) (len players)))
+                (= c "k") (setv sel (% (dec sel) (len players)))
+                (= c "g") (setv sel 0)
+                (= c "G") (setv sel (dec (len players)))
+                (= c " ") (.pause lms server player)
+                (= c "p") (.power lms server player "toggle")
+                (= c "D") (setv debug (not debug))
+                (in c "l\n") (player-loop scr server player))
+          (except [KeyboardInterrupt] (setv running False))
+          (except [e [lms.LMSError]] (.error display scr e)))))))
 
 
 (defn player-loop [scr server player]
@@ -187,8 +191,8 @@ search pane
     (.player display scr status :debug debug)
     (.playlist display scr status sel :debug debug)
     (.track display scr (.title lms server player) (.artist lms server player) (.album lms server player))
-    ; It is unknown why printing on y=1 interacts with the cover art to print in the wrong place.
-    ; Until this is fixed, don't display cover art with first line text.
+    ;; It is unknown why printing on y=1 interacts with the cover art to print in the wrong place.
+    ;; Until this is fixed, don't display cover art with first line text.
     (unless (:show cover) (.server display scr f"LMS v{(.version lms server)}"))
     (.refresh scr)
     ;(setv sel (if playlist (% sel track-count) 0))
@@ -236,7 +240,7 @@ search pane
             (= c "b") (search-loop scr server player player-name "albums" f"artist_id:{(get-in selected-track "artist_id")}")
             (= c "t") (search-loop scr server player player-name "songs" f"artist_id:{(get-in selected-track "artist_id")}")
             (= c "o") (search-loop scr server player player-name "songs" f"album_id:{(get-in selected-track "album_id")}"))))
-      ;(.message display scr f"sel: {sel} / {selected-index} / {track-count} / {current-index}")))
+  ;(.message display scr f"sel: {sel} / {selected-index} / {track-count} / {current-index}")))
   (.clear scr))
 
 
@@ -244,41 +248,41 @@ search pane
   "Search the library and add/insert/replace playlist."
   (global debug)
   (when term
-     (setv running True
-             sel 0)
-     (setv #( loop-kind control-kind) (cond (= kind "artists") #( "artists_loop" "artist")
-                                            (= kind "albums") #( "albums_loop" "album")
-                                            (= kind "songs") #( "titles_loop" "track")
-                                            (= kind "genres") #( "genres_loop" "album")
-                                            (= kind "playlists") #( "playlists_loop" "album")))
-     (setv results (get-in (.search lms server player kind term) loop-kind))
-     (.clear scr)
-     (when results
+    (setv running True
+          sel 0)
+    (setv #( loop-kind control-kind) (cond (= kind "artists") #( "artists_loop" "artist")
+                                           (= kind "albums") #( "albums_loop" "album")
+                                           (= kind "songs") #( "titles_loop" "track")
+                                           (= kind "genres") #( "genres_loop" "album")
+                                           (= kind "playlists") #( "playlists_loop" "album")))
+    (setv results (get-in (.search lms server player kind term) loop-kind))
+    (.clear scr)
+    (when results
       (while running
-           (.search-results display scr player-name results (second (.split term ":")) kind sel :debug debug)
-           (setv selected-result (get results (% sel (len results))))
-           (.refresh scr)
-           (setv c (.getkey scr))
-           (cond (none? c) None
-                 (= c "?") (help-loop scr (search-help))
-                 (in c "qh") (setv running False)
-                 (= c "r") (.clear scr)
-                 (= c "g") (setv sel 0)
-                 (= c "G") (setv sel (dec (len results)))
-                 (= c "j") (setv sel (% (inc sel) (len results)))
-                 (= c "k") (setv sel (% (dec sel) (len results)))
-                 (= c "D") (setv debug (not debug))
-                 (in c "l/") (cond (= kind "artists") (search-loop scr server player player-name "albums" f"artist_id:{(get-in selected-result "id")}")
-                                   (= kind "albums") (search-loop scr server player player-name "songs" f"album_id:{(get-in selected-result "id")}")
-                                   (= kind "songs") (search-loop scr server player player-name "artists" f"track_id:{(get-in selected-result "id")}"))
-                 (in c "aip\n") (do
-                                  (.playlist-control lms server player
-                                                         (get selected-result "id")
-                                                         :action (cond (= c "a") "add"
-                                                                       (= c "i") "insert"
-                                                                       :else "load")
-                                                         :kind control-kind)
-                                  (setv running False)))))))
+        (.search-results display scr player-name results (second (.split term ":")) kind sel :debug debug)
+        (setv selected-result (get results (% sel (len results))))
+        (.refresh scr)
+        (setv c (.getkey scr))
+        (cond (none? c) None
+              (= c "?") (help-loop scr (search-help))
+              (in c "qh") (setv running False)
+              (= c "r") (.clear scr)
+              (= c "g") (setv sel 0)
+              (= c "G") (setv sel (dec (len results)))
+              (= c "j") (setv sel (% (inc sel) (len results)))
+              (= c "k") (setv sel (% (dec sel) (len results)))
+              (= c "D") (setv debug (not debug))
+              (in c "l/") (cond (= kind "artists") (search-loop scr server player player-name "albums" f"artist_id:{(get-in selected-result "id")}")
+                                (= kind "albums") (search-loop scr server player player-name "songs" f"album_id:{(get-in selected-result "id")}")
+                                (= kind "songs") (search-loop scr server player player-name "artists" f"track_id:{(get-in selected-result "id")}"))
+              (in c "aip\n") (do
+                               (.playlist-control lms server player
+                                                  (get selected-result "id")
+                                                  :action (cond (= c "a") "add")
+                                                  (= c "i") "insert"
+                                                  :else "load"
+                                                  :kind control-kind)
+                               (setv running False)))))))
 
 
 (defn browse-loop [scr server player player-name * [folder-id 0]]
@@ -290,7 +294,7 @@ search pane
   (setv parent (get-in (first (.browse lms server :folder-id folder-id :return-top False)) "filename"))
   (.clear scr)
   (when results
-     (while running
+    (while running
       (.browse-results display scr player-name results sel :parent parent :debug debug)
       (setv selected-result (get results (% sel (len results))))
       (setv kind (get selected-result "type")) ; folder or track
@@ -310,11 +314,11 @@ search pane
                              (= kind "track") (search-loop scr server player player-name "artists" f"track_id:{(get-in selected-result "id")}"))
             (in c "aip\n") (do
                              (.playlist-control lms server player
-                                                   (get selected-result "id")
-                                                   :action (cond (= c "a") "add"
-                                                                 (= c "i") "insert"
-                                                                 :else "load")
-                                                   :kind kind)
+                                                (get selected-result "id")
+                                                :action (cond (= c "a") "add")
+                                                (= c "i") "insert"
+                                                :else "load"
+                                                :kind kind)
                              (setv running False))))))
 
 
@@ -323,47 +327,45 @@ search pane
   (setv running True)
   (.clear scr)
   (while running
-     (.help display scr help-text)
-     (.message display scr copyright)
-     (.refresh scr)
-     (setv c (.getkey scr))
-     (cond (none? c) None
-           :else (setv running False))))
+    (.help display scr help-text)
+    (.message display scr copyright)
+    (.refresh scr)
+    (setv c (.getkey scr))
+    (cond (none? c) None
+          :else (setv running False))))
 
 
 (defn update-coverart [scr server player track cover]
   "Fetch/show the cover art of the current track."
-                                ; cover {:coverid None :sixel None :last-coverid None :fresh False :filename ".."}
-                                ; get new cover art on new track
+  ;; cover {:coverid None :sixel None :last-coverid None :fresh False :filename ".."}
+  ;; get new cover art on new track
   (when (or (:notify cover) (:show cover))
-     (unless (= (:coverid cover) (get-in track "coverid"))
+    (unless (= (:coverid cover) (get-in track "coverid"))
       (assoc cover "coverid" (get-in track "coverid")
-                "filename" f"{tempdir}/ncsb-cover-{(:coverid cover)}.png"
-                "displayed" False)
+             "filename" f"{tempdir}/ncsb-cover-{(:coverid cover)}.png"
+             "displayed" False)
       (if (get-in track "artwork_url") (.remote-coverart server (get-in track "artwork_url") :fname (:filename cover))
-          (.coverart server (:coverid cover) 320 320 :fname (:filename cover))))
-     (unless (and (:displayed cover) (= (:prev-track-id cover) (get-in track "id")))
+        (.coverart server (:coverid cover) 320 320 :fname (:filename cover))))
+    (unless (and (:displayed cover) (= (:prev-track-id cover) (get-in track "id")))
       (try
-           (when (:show cover)
-                                ; this causes a visible flash but gets the cursor in the right place
-             (.locate-coverart display scr)
-             (-> cover
-                 (:filename)
-                 (sixel.show 140)
-                 (display.coverart)))
-           (when (and (:notify cover) (:filename cover))
-             (.call subprocess ["notify-send" "-i" (:filename cover)
-                                     (.title lms server player)
-                                     (.join "\n" (remove none?
-                                                              [(.album lms server player)
-                                                               (.artist lms server player)]))]))
-           (assoc cover "displayed" True "prev_track_id" (get-in track "id"))
-           (except [e [RuntimeError]] (.error display scr e))))))
+        (when (:show cover)
+          ;; this causes a visible flash but gets the cursor in the right place
+          (.locate-coverart display scr)
+          (-> cover
+            (:filename)
+            (sixel.show 140)
+            (display.coverart)))
+        (when (and (:notify cover) (:filename cover))
+          (.call subprocess ["notify-send" "-i" (:filename cover)
+                             (.title lms server player)
+                             (.join "\n" (remove none?
+                                                 [(.album lms server player)
+                                                  (.artist lms server player)]))]))
+        (assoc cover "displayed" True "prev_track_id" (get-in track "id"))
+        (except [e [RuntimeError]] (.error display scr e))))))
 
 
 (defn main [* server-ip port]
-  "Main entry point.
- The command-line tool is in python because hy does not handle sigwinch, which
- breaks resizing in curses."
+  "Main entry point."
   (.wrapper curses server-loop :server-ip server-ip :port port))
 
