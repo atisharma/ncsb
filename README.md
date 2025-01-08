@@ -8,6 +8,7 @@
 - current playlist management
 - player control
 - album art in sixel-compliant terminals (experimental, off by default)
+- regular crashes
 
 
 ## Screenshot / screencast
@@ -38,7 +39,7 @@ In any screen, press `?` for available commands.
 
 ## Installation
 
-Requires python 3 (tested on 3.9), with python packages requests, hy (0.20.0) and (for optional coverart) libsixel-python.
+Requires python 3 (tested on 3.9-12), with python packages requests, hy (>=1.0) and (for optional coverart) libsixel-python.
 
 To install these with pip into your current environment (venv etc...),
 ```
