@@ -83,3 +83,5 @@ In-terminal coverart requires libsixel to be installed on your system (presumabl
 
 Copyright A S Sharma (2021), released under the GPL v3.0 (see LICENSE and AUTHORS).
 Thanks also to elParaguayo (LMSTools), Ralph Irving (squeezelite) and the Slimerver / Logitech Media Server authors for inspiration.
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/atisharma/ncsb)
