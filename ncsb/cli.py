@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""ncsb CLI — Agent-friendly command-line interface to Lyrion Music Server.
+"""ncsb-cli — Agent-friendly command-line interface to Lyrion Music Server.
 
 Usage:
-    ncsb_cli.py <command> [options]
+    ncsb-cli <command> [options]
 
 Commands:
     play        Start playback
@@ -22,13 +22,13 @@ Commands:
 Global options:
     --player NAME   Player name (case-insensitive)
     --mac MAC       Player MAC address directly
-    --host HOST     LMS server host (default: $LMS_HOST or sol.lan.letterbox.pw)
+    --host HOST     LMS server host (default: $LMS_HOST or localhost)
     --port PORT     LMS server port (default: $LMS_PORT or 9000)
 
 Environment:
     NCSB_PLAYER     Default player name
-    LMS_HOST        LMS server hostname
-    LMS_PORT        LMS server port
+    LMS_HOST        LMS server hostname (default: localhost)
+    LMS_PORT        LMS server port (default: 9000)
 """
 
 import sys
@@ -39,7 +39,7 @@ from ncsb import lms_controller as lms
 
 
 def get_server():
-    host = os.environ.get('LMS_HOST', 'sol.lan.letterbox.pw')
+    host = os.environ.get('LMS_HOST', 'localhost')
     port = int(os.environ.get('LMS_PORT', '9000'))
     return lms.Server(host, port)
 
@@ -145,7 +145,7 @@ def cmd_info(server, mac, args):
 
 def cmd_jump(server, mac, args):
     if not args:
-        print("Usage: ncsb_cli.py jump <position>", file=sys.stderr)
+        print("Usage: ncsb-cli jump <position>", file=sys.stderr)
         sys.exit(1)
     pos = int(args[0])
     lms.playlist_jump(server, mac, pos)
@@ -160,7 +160,7 @@ def cmd_clear(server, mac, args):
 
 def cmd_search(server, mac, args):
     if not args:
-        print("Usage: ncsb_cli.py search [--kind albums|artists|songs] <query>", file=sys.stderr)
+        print("Usage: ncsb-cli search [--kind albums|artists|songs] <query>", file=sys.stderr)
         sys.exit(1)
 
     kind = 'albums'
@@ -191,7 +191,7 @@ def cmd_search(server, mac, args):
 
 def cmd_load(server, mac, args):
     if len(args) < 2:
-        print("Usage: ncsb_cli.py load <album|artist|track> <id> [--action load|add|insert]", file=sys.stderr)
+        print("Usage: ncsb-cli load <album|artist|track> <id> [--action load|add|insert]", file=sys.stderr)
         sys.exit(1)
     kind = args[0]
     item_id = int(args[1])
