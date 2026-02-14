@@ -35,8 +35,6 @@ import sys
 import os
 import json
 
-# Add ncsb to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ncsb import lms_controller as lms
 
 
