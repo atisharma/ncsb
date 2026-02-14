@@ -262,7 +262,12 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 (defn search [server mac kind params]
   "Search on a general term.
   kind is one of artists, albums, songs, tracks, playlists."
-  (.send server [mac [kind 0 100 params]]))
+  (.send server [mac [kind 0 100 f"search:{params}"]]))
+
+(defn search-all [server mac params]
+  "Unified search across artists, albums, and tracks.
+  Returns results grouped by category."
+  (.send server [mac ["search" 0 100 f"search:{params}"]]))
 
 (defn songinfo [server track_id]
   "Return all information on a song."
