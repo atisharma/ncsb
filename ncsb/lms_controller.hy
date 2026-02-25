@@ -124,6 +124,28 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
   (cond (= action "toggle") (power server mac (not (int (power server mac))))
         :else (get-in (.send server [mac ["power" action]]) "_power")))
 
+(defn sleep [server mac [seconds "?"]]
+  "Set sleep timer in seconds (powers off player after N seconds), or query remaining time."
+  (if (= seconds "?")
+    (get-in (.send server [mac ["sleep" "?"]]) "_sleep")
+    (.send server [mac ["sleep" seconds]])))
+
+(defn play-url [server mac url [title None]]
+  "Play a URL (e.g., radio stream). Optional title for display."
+  (if title
+    (.send server [mac ["playlist" "play" url title]])
+    (.send server [mac ["playlist" "play" url]])))
+
+(defn add-url [server mac url [title None]]
+  "Add a URL to the end of the playlist without interrupting playback."
+  (if title
+    (.send server [mac ["playlist" "add" url title]])
+    (.send server [mac ["playlist" "add" url]])))
+
+
+
+
+
 (defn play [server mac]
   "Start the player."
   (.send server [mac ["play"]]))

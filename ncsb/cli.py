@@ -18,6 +18,8 @@ Commands:
     load        Load album/artist/track by ID
     players     List available players
     status      Show player status
+    sleep       Set sleep timer or query remaining time
+    radio       Play internet radio stream URL
 
 Global options:
     --player NAME   Player name (case-insensitive)
@@ -219,6 +221,49 @@ def cmd_status(server, mac, args):
     print(json.dumps(st, indent=2))
 
 
+def cmd_sleep(server, mac, args):
+    if args:
+        try:
+            minutes = int(args[0])
+            seconds = minutes * 60
+            lms.sleep(server, mac, seconds)
+            print(f"Sleep timer set: {minutes} minutes")
+        except ValueError:
+            print("Error: minutes must be a number", file=sys.stderr)
+            sys.exit(1)
+    else:
+        remaining = lms.sleep(server, mac, '?')
+        if remaining:
+            minutes = int(float(remaining)) / 60
+            print(f"Sleep timer: {minutes:.1f} minutes remaining")
+        else:
+            print("Sleep timer: not set")
+
+
+def cmd_radio(server, mac, args):
+    if not args:
+        print("Usage: ncsb-cli radio <url> [--title 'Station Name'] [--add]", file=sys.stderr)
+        sys.exit(1)
+    url = args[0]
+    title = None
+    add_mode = False
+    i = 1
+    while i < len(args):
+        if args[i] == '--title' and i + 1 < len(args):
+            title = args[i + 1]; i += 2
+        elif args[i] == '--add':
+            add_mode = True; i += 1
+        else:
+            i += 1
+    if add_mode:
+        lms.add_url(server, mac, url, title)
+        print(f"Added radio stream: {title or url}")
+    else:
+        lms.play_url(server, mac, url, title)
+        lms.play(server, mac)
+        print(f"Now playing: {title or url}")
+
+
 def _fmt_time(seconds):
     if seconds is None or seconds == '?':
         return '?:??'
@@ -240,6 +285,8 @@ COMMANDS = {
     'load': cmd_load,
     'players': cmd_players,
     'status': cmd_status,
+    'sleep': cmd_sleep,
+    'radio': cmd_radio,
 }
 
 PLAYER_OPTIONAL = {'players'}
