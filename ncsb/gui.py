@@ -76,6 +76,10 @@ class PlayerWindow(QMainWindow):
         self._setup_ui()
         self._resolve_player()
         
+        # Compact mode (minimal UI)
+        self._compact_mode = False
+        self._toggle_elements = []  # Populated after UI setup
+        
         # Poll for updates
         self.timer = QTimer()
         self.timer.timeout.connect(self._update_state)
@@ -112,6 +116,7 @@ class PlayerWindow(QMainWindow):
                 border-radius: 6px;
             }
         """)
+        self.art_label.mousePressEvent = lambda e: self._toggle_compact()
         layout.addWidget(self.art_label, alignment=Qt.AlignCenter)
         
         # Track info
@@ -187,6 +192,18 @@ class PlayerWindow(QMainWindow):
         volume_layout.addWidget(vol_label)
         volume_layout.addWidget(self.volume_slider)
         layout.addLayout(volume_layout)
+        
+        # Elements to hide in compact mode
+        self._toggle_elements = [
+            player_label,
+            self.player_combo,
+            self.shuffle_btn,
+            self.prev_btn,
+            self.next_btn,
+            self.repeat_btn,
+            self.volume_slider,
+            vol_label,
+        ]
     
     def _resolve_player(self):
         """Resolve player and populate combo box."""
@@ -390,6 +407,19 @@ class PlayerWindow(QMainWindow):
             self._update_state()
         except Exception:
             pass
+    
+    def _toggle_compact(self):
+        """Toggle compact mode (hide controls)."""
+        self._compact_mode = not self._compact_mode
+        for widget in self._toggle_elements:
+            widget.setVisible(not self._compact_mode)
+        # Adjust window size
+        if self._compact_mode:
+            self.setMinimumSize(220, 200)
+            self.resize(220, 200)
+        else:
+            self.setMinimumSize(220, 300)
+            self.resize(220, 300)
 
 
 def main(host='localhost', port=9000, player=None, mac=None):
