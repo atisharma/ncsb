@@ -86,6 +86,10 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
     (.send server ["-" ["players" "0" x]])
     (get-in x "players_loop")))
 
+(defn rescan [server]
+  "Trigger a library rescan."
+  (.send server ["-" ["rescan"]]))
+
 (defn rescan-progress [server]
   "Return progress of a rescan."
   (get-in (.send server ["-" ["rescanprogress"]]) "rescan"))
@@ -254,6 +258,10 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 (defn playlist-delete [server mac index]
   "Delete by index from playlist."
   (.send server [mac ["playlist" "delete" f"{index :d}"]]))
+
+(defn playlist [server mac * [from 0] [to 100]]
+  "Return playlist tracks."
+  (get-in (.send server [mac ["status" from to "tags:a,l,c,d,t"]]) "playlist_loop"))
 
 (defn playlist-position [server mac]
   "Return index of current item in playlist."
