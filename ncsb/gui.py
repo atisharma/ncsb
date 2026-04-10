@@ -109,7 +109,8 @@ class PlayerWindow(QMainWindow):
         # Album art
         self.art_label = QLabel()
         self.art_label.setAlignment(Qt.AlignCenter)
-        self.art_label.setMinimumSize(140, 140)
+        self.art_label.setFixedSize(140, 140)
+        self.art_label.setScaledContents(False)
         self.art_label.setStyleSheet("""
             QLabel {
                 background-color: #16213e;
@@ -124,12 +125,15 @@ class PlayerWindow(QMainWindow):
         self.title_label.setAlignment(Qt.AlignCenter)
         self.title_label.setFont(QFont("Sans", 11, QFont.Bold))
         self.title_label.setWordWrap(True)
+        self.title_label.setMaximumWidth(200)
         layout.addWidget(self.title_label)
         
         self.artist_label = QLabel("—")
         self.artist_label.setAlignment(Qt.AlignCenter)
         self.artist_label.setFont(QFont("Sans", 9))
         self.artist_label.setStyleSheet("color: #a0a0a0;")
+        self.artist_label.setWordWrap(True)
+        self.artist_label.setMaximumWidth(200)
         layout.addWidget(self.artist_label)
         
         # Progress
