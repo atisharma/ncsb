@@ -492,6 +492,9 @@ class PlayerWindow(QMainWindow):
 
 def main(host='localhost', port=9000, player=None, mac=None):
     """Launch the GUI."""
+    # Set app-id for Wayland before creating QApplication
+    os.environ.setdefault('QT_WAYLAND_APP_ID', 'ncsb')
+    
     app = QApplication(sys.argv)
     app.setApplicationName("ncsb")
     app.setDesktopFileName("ncsb")
