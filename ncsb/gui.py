@@ -395,7 +395,7 @@ class PlayerWindow(QMainWindow):
             self.volume_slider.setValue(vol)
             self.volume_slider.blockSignals(False)
             
-            # Shuffle/Repeat with color coding
+            # Shuffle/Repeat with color coding and labels
             shuffle = int(status.get('playlist shuffle', 0) or 0)
             repeat = int(status.get('playlist repeat', 0) or 0)
             
@@ -403,23 +403,29 @@ class PlayerWindow(QMainWindow):
             if shuffle == 0:
                 self.shuffle_btn.setChecked(False)
                 self.shuffle_btn.setStyleSheet("")
+                self.shuffle_btn.setText("S")
             elif shuffle == 1:  # Songs - blue
                 self.shuffle_btn.setChecked(True)
                 self.shuffle_btn.setStyleSheet("background-color: #3b82f6;")
+                self.shuffle_btn.setText("S")
             else:  # Albums - green
                 self.shuffle_btn.setChecked(True)
                 self.shuffle_btn.setStyleSheet("background-color: #22c55e;")
+                self.shuffle_btn.setText("Sa")
             
             # Repeat: 0=off, 1=song, 2=playlist
             if repeat == 0:
                 self.repeat_btn.setChecked(False)
                 self.repeat_btn.setStyleSheet("")
+                self.repeat_btn.setText("R")
             elif repeat == 1:  # Song - blue
                 self.repeat_btn.setChecked(True)
                 self.repeat_btn.setStyleSheet("background-color: #3b82f6;")
+                self.repeat_btn.setText("R")
             else:  # Playlist - green
                 self.repeat_btn.setChecked(True)
                 self.repeat_btn.setStyleSheet("background-color: #22c55e;")
+                self.repeat_btn.setText("Ra")
             
         except Exception as e:
             print(f"Error updating state: {e}")
