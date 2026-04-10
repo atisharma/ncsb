@@ -26,7 +26,7 @@ class PlayerWindow(QMainWindow):
         self.player_name = player_name
         
         self.setWindowTitle("ncsb")
-        self.setMinimumSize(320, 420)
+        self.setMinimumSize(220, 300)
         self.setStyleSheet("""
             QMainWindow { background-color: #1a1a2e; }
             QLabel { color: #eaeaea; }
@@ -34,35 +34,36 @@ class PlayerWindow(QMainWindow):
                 background-color: #16213e;
                 color: #eaeaea;
                 border: none;
-                border-radius: 14px;
-                font-size: 16px;
-                min-width: 28px;
-                min-height: 28px;
+                border-radius: 10px;
+                font-size: 12px;
+                min-width: 20px;
+                min-height: 20px;
             }
             QPushButton:hover { background-color: #1f3460; }
             QPushButton:pressed { background-color: #0f3460; }
+            QPushButton:checked { background-color: #e94560; }
             QSlider::groove:horizontal {
                 background: #16213e;
-                height: 4px;
-                border-radius: 2px;
+                height: 3px;
+                border-radius: 1px;
             }
             QSlider::handle:horizontal {
                 background: #e94560;
-                width: 12px;
-                margin: -4px 0;
-                border-radius: 6px;
+                width: 10px;
+                margin: -3px 0;
+                border-radius: 5px;
             }
             QSlider::sub-page:horizontal {
                 background: #e94560;
-                border-radius: 2px;
+                border-radius: 1px;
             }
             QComboBox {
                 background-color: #16213e;
                 color: #eaeaea;
                 border: none;
-                padding: 4px 8px;
-                border-radius: 4px;
-                font-size: 11px;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 10px;
             }
             QComboBox::drop-down { border: none; }
             QComboBox QAbstractItemView {
@@ -87,8 +88,8 @@ class PlayerWindow(QMainWindow):
         central = QWidget()
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(12)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
         
         # Player selector
         player_layout = QHBoxLayout()
@@ -104,11 +105,11 @@ class PlayerWindow(QMainWindow):
         # Album art
         self.art_label = QLabel()
         self.art_label.setAlignment(Qt.AlignCenter)
-        self.art_label.setMinimumSize(200, 200)
+        self.art_label.setMinimumSize(140, 140)
         self.art_label.setStyleSheet("""
             QLabel {
                 background-color: #16213e;
-                border-radius: 8px;
+                border-radius: 6px;
             }
         """)
         layout.addWidget(self.art_label, alignment=Qt.AlignCenter)
@@ -116,13 +117,13 @@ class PlayerWindow(QMainWindow):
         # Track info
         self.title_label = QLabel("—")
         self.title_label.setAlignment(Qt.AlignCenter)
-        self.title_label.setFont(QFont("Sans", 13, QFont.Bold))
+        self.title_label.setFont(QFont("Sans", 11, QFont.Bold))
         self.title_label.setWordWrap(True)
         layout.addWidget(self.title_label)
         
         self.artist_label = QLabel("—")
         self.artist_label.setAlignment(Qt.AlignCenter)
-        self.artist_label.setFont(QFont("Sans", 10))
+        self.artist_label.setFont(QFont("Sans", 9))
         self.artist_label.setStyleSheet("color: #a0a0a0;")
         layout.addWidget(self.artist_label)
         
@@ -140,7 +141,12 @@ class PlayerWindow(QMainWindow):
         
         # Controls
         controls = QHBoxLayout()
-        controls.setSpacing(10)
+        controls.setSpacing(6)
+        
+        self.shuffle_btn = QPushButton("🔀")
+        self.shuffle_btn.setCheckable(True)
+        self.shuffle_btn.clicked.connect(self._on_shuffle)
+        controls.addWidget(self.shuffle_btn)
         
         self.prev_btn = QPushButton("◀◀")
         self.prev_btn.clicked.connect(self._on_prev)
@@ -151,9 +157,9 @@ class PlayerWindow(QMainWindow):
         self.play_btn.setStyleSheet("""
             QPushButton {
                 background-color: #e94560;
-                font-size: 18px;
-                min-width: 36px;
-                min-height: 36px;
+                font-size: 14px;
+                min-width: 28px;
+                min-height: 28px;
             }
             QPushButton:hover { background-color: #ff6b6b; }
         """)
@@ -163,12 +169,17 @@ class PlayerWindow(QMainWindow):
         self.next_btn.clicked.connect(self._on_next)
         controls.addWidget(self.next_btn)
         
+        self.repeat_btn = QPushButton("🔁")
+        self.repeat_btn.setCheckable(True)
+        self.repeat_btn.clicked.connect(self._on_repeat)
+        controls.addWidget(self.repeat_btn)
+        
         layout.addLayout(controls)
         
         # Volume
         volume_layout = QHBoxLayout()
         vol_label = QLabel("🔊")
-        vol_label.setFont(QFont("Sans", 12))
+        vol_label.setFont(QFont("Sans", 10))
         self.volume_slider = QSlider(Qt.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(50)
@@ -266,6 +277,27 @@ class PlayerWindow(QMainWindow):
             self.volume_slider.setValue(vol)
             self.volume_slider.blockSignals(False)
             
+            # Shuffle/Repeat
+            shuffle = int(status.get('playlist shuffle', 0) or 0)
+            repeat = int(status.get('playlist repeat', 0) or 0)
+            self.shuffle_btn.setChecked(shuffle > 0)
+            self.repeat_btn.setChecked(repeat > 0)
+            
+            # Update button text based on mode
+            if shuffle == 2:
+                self.shuffle_btn.setText("🔀a")
+            elif shuffle == 1:
+                self.shuffle_btn.setText("🔀")
+            else:
+                self.shuffle_btn.setText("🔀")
+            
+            if repeat == 2:
+                self.repeat_btn.setText("🔁")
+            elif repeat == 1:
+                self.repeat_btn.setText("🔂")
+            else:
+                self.repeat_btn.setText("🔁")
+            
         except Exception as e:
             print(f"Error updating state: {e}")
     
@@ -275,14 +307,14 @@ class PlayerWindow(QMainWindow):
             import tempfile
             import requests
             
-            url = f"http://{self.server.ip}:{self.server.port}/music/{coverid}/cover_200x200.png"
+            url = f"http://{self.server.ip}:{self.server.port}/music/{coverid}/cover_140x140.png"
             resp = requests.get(url, timeout=5)
             if resp.ok:
                 pixmap = QPixmap()
                 pixmap.loadFromData(resp.content)
                 if not pixmap.isNull():
                     scaled = pixmap.scaled(
-                        200, 200,
+                        140, 140,
                         Qt.KeepAspectRatio,
                         Qt.SmoothTransformation
                     )
@@ -330,6 +362,34 @@ class PlayerWindow(QMainWindow):
         """Set volume."""
         if self.mac:
             lms.volume(self.server, self.mac, value)
+    
+    def _on_shuffle(self):
+        """Toggle shuffle."""
+        if not self.mac:
+            return
+        try:
+            status = lms.status(self.server, self.mac)
+            current = int(status.get('playlist shuffle', 0) or 0)
+            # Cycle: 0 -> 1 -> 2 -> 0
+            new_val = (current + 1) % 3
+            lms.playlist_shuffle(self.server, self.mac, new_val)
+            self._update_state()
+        except Exception:
+            pass
+    
+    def _on_repeat(self):
+        """Toggle repeat."""
+        if not self.mac:
+            return
+        try:
+            status = lms.status(self.server, self.mac)
+            current = int(status.get('playlist repeat', 0) or 0)
+            # Cycle: 0 -> 1 -> 2 -> 0
+            new_val = (current + 1) % 3
+            lms.playlist_repeat(self.server, self.mac, new_val)
+            self._update_state()
+        except Exception:
+            pass
 
 
 def main(host='localhost', port=9000, player=None, mac=None):
