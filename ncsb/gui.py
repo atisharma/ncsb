@@ -395,11 +395,31 @@ class PlayerWindow(QMainWindow):
             self.volume_slider.setValue(vol)
             self.volume_slider.blockSignals(False)
             
-            # Shuffle/Repeat
+            # Shuffle/Repeat with color coding
             shuffle = int(status.get('playlist shuffle', 0) or 0)
             repeat = int(status.get('playlist repeat', 0) or 0)
-            self.shuffle_btn.setChecked(shuffle > 0)
-            self.repeat_btn.setChecked(repeat > 0)
+            
+            # Shuffle: 0=off, 1=songs, 2=albums
+            if shuffle == 0:
+                self.shuffle_btn.setChecked(False)
+                self.shuffle_btn.setStyleSheet("")
+            elif shuffle == 1:  # Songs - blue
+                self.shuffle_btn.setChecked(True)
+                self.shuffle_btn.setStyleSheet("background-color: #3b82f6;")
+            else:  # Albums - green
+                self.shuffle_btn.setChecked(True)
+                self.shuffle_btn.setStyleSheet("background-color: #22c55e;")
+            
+            # Repeat: 0=off, 1=song, 2=playlist
+            if repeat == 0:
+                self.repeat_btn.setChecked(False)
+                self.repeat_btn.setStyleSheet("")
+            elif repeat == 1:  # Song - blue
+                self.repeat_btn.setChecked(True)
+                self.repeat_btn.setStyleSheet("background-color: #3b82f6;")
+            else:  # Playlist - green
+                self.repeat_btn.setChecked(True)
+                self.repeat_btn.setStyleSheet("background-color: #22c55e;")
             
         except Exception as e:
             print(f"Error updating state: {e}")
