@@ -1,0 +1,3 @@
+(import hyjinx [config])
+(config "config.toml")
+(config "/home/ati/.config/ncsb/config.toml")

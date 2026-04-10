@@ -86,6 +86,10 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
     (.send server ["-" ["players" "0" x]])
     (get-in x "players_loop")))
 
+(defn rescan [server]
+  "Trigger a library rescan."
+  (.send server ["-" ["rescan"]]))
+
 (defn rescan-progress [server]
   "Return progress of a rescan."
   (get-in (.send server ["-" ["rescanprogress"]]) "rescan"))
@@ -123,6 +127,28 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
   "Set (1|0)/toggle (toggle)/query (?) power status of player."
   (cond (= action "toggle") (power server mac (not (int (power server mac))))
         :else (get-in (.send server [mac ["power" action]]) "_power")))
+
+(defn sleep [server mac [seconds "?"]]
+  "Set sleep timer in seconds (powers off player after N seconds), or query remaining time."
+  (if (= seconds "?")
+    (get-in (.send server [mac ["sleep" "?"]]) "_sleep")
+    (.send server [mac ["sleep" seconds]])))
+
+(defn play-url [server mac url [title None]]
+  "Play a URL (e.g., radio stream). Optional title for display."
+  (if title
+    (.send server [mac ["playlist" "play" url title]])
+    (.send server [mac ["playlist" "play" url]])))
+
+(defn add-url [server mac url [title None]]
+  "Add a URL to the end of the playlist without interrupting playback."
+  (if title
+    (.send server [mac ["playlist" "add" url title]])
+    (.send server [mac ["playlist" "add" url]])))
+
+
+
+
 
 (defn play [server mac]
   "Start the player."
@@ -232,6 +258,10 @@ https://github.com/elParaguayo/LMS-CLI-Documentation/blob/master/LMS-CLI.md
 (defn playlist-delete [server mac index]
   "Delete by index from playlist."
   (.send server [mac ["playlist" "delete" f"{index :d}"]]))
+
+(defn playlist [server mac * [from 0] [to 100]]
+  "Return playlist tracks."
+  (get-in (.send server [mac ["status" from to "tags:a,l,c,d,t"]]) "playlist_loop"))
 
 (defn playlist-position [server mac]
   "Return index of current item in playlist."
