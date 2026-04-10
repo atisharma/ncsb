@@ -85,6 +85,11 @@ class PlayerWindow(QMainWindow):
         self._setup_ui()
         self._resolve_player()
         
+        # Debounce resize events
+        self._resize_timer = QTimer()
+        self._resize_timer.setSingleShot(True)
+        self._resize_timer.timeout.connect(self._scale_art)
+        
         # Poll for updates
         self.timer = QTimer()
         self.timer.timeout.connect(self._update_state)
@@ -235,8 +240,8 @@ class PlayerWindow(QMainWindow):
         self._player_label.setVisible(player_visible)
         self.player_combo.setVisible(player_visible)
         
-        # Scale album art
-        self._scale_art()
+        # Debounce art scaling (100ms delay)
+        self._resize_timer.start(100)
     
     def _scale_art(self):
         """Scale album art to fit available space."""
