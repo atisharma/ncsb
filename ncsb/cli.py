@@ -57,23 +57,53 @@ Commands:
     sleep [N]                 Set sleep timer N minutes, or query
 
 Global options:
-    --host HOST               LMS server host (default: $LMS_HOST or localhost)
-    --port PORT               LMS server port (default: $LMS_PORT or 9000)
-    --player NAME             Player name (case-insensitive)
-    --mac MAC                 Player MAC address directly
+    -H, --host HOST           LMS server host
+    -p, --port PORT           LMS server port
+    -P, --player PLAYER       Player name
+    -m, --mac MAC             Player MAC address
+
+Config file:
+    ~/.config/ncsb/config.toml
+    
+    [default]
+    host = "sol"
+    player = "juno"
+    port = 9000
 
 Environment:
-    LMS_HOST                  LMS server hostname (default: localhost)
-    LMS_PORT                  LMS server port (default: 9000)
+    LMS_HOST                  LMS server hostname
+    LMS_PORT                  LMS server port
     NCSB_PLAYER               Default player name
 """
 import sys
 import os
 import json
+from pathlib import Path
 
 import click
 
 from ncsb import lms_controller as lms
+
+
+# Config file handling
+CONFIG_FILE = Path.home() / '.config' / 'ncsb' / 'config.toml'
+
+
+def read_config():
+    """Read config file and return defaults dict for click."""
+    if not CONFIG_FILE.exists():
+        return {}
+    try:
+        import tomllib
+    except ImportError:
+        import tomli as tomllib
+    
+    try:
+        with open(CONFIG_FILE, 'rb') as f:
+            config = tomllib.load(f)
+        return config.get('default', config.get('ncsb', {}))
+    except Exception:
+        return {}
 
 
 def _fmt_time(seconds):
@@ -666,6 +696,30 @@ def rescan_progress(ctx):
         click.echo("No rescan in progress")
 
 
+@cli.command()
+@click.pass_context
+def config(ctx):
+    """Show config file location and current settings."""
+    click.echo(f"Config file: {CONFIG_FILE}")
+    if CONFIG_FILE.exists():
+        click.echo("\nCurrent config:")
+        cfg = read_config()
+        for key, value in sorted(cfg.items()):
+            click.echo(f"  {key}: {value}")
+        click.echo("\nEffective settings (config + env + CLI):")
+        click.echo(f"  host: {ctx.obj['host']}")
+        click.echo(f"  port: {ctx.obj['port']}")
+        click.echo(f"  player: {ctx.obj['player'] or '(not set)'}")
+        click.echo(f"  mac: {ctx.obj['mac'] or '(not set)'}")
+    else:
+        click.echo("\nNo config file found.")
+        click.echo("\nCreate one at ~/.config/ncsb/config.toml:")
+        click.echo('  [default]')
+        click.echo('  host = "sol"')
+        click.echo('  player = "juno"')
+        click.echo('  port = 9000')
+
+
 # --- Radio & Sleep commands ---
 
 @cli.command()
@@ -708,7 +762,8 @@ def sleep(ctx, minutes):
 
 def main():
     """Entry point for ncsb CLI."""
-    cli()
+    config_defaults = read_config()
+    cli(default_map=config_defaults)
 
 
 if __name__ == '__main__':

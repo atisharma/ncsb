@@ -60,6 +60,7 @@ $ ncsb -H lms-server search miles --kind artists
 | `load` | Load album/artist/track |
 | `info`, `playing`, `status` | Status display |
 | `players`, `serverstatus`, `version` | Server info |
+| `config` | Show config file and settings |
 | `radio`, `sleep` | Radio and sleep timer |
 
 Per-command help: `ncsb search --help`
@@ -80,6 +81,26 @@ In any screen, press `?` for available commands.
 | `LMS_HOST` | Default LMS server hostname |
 | `LMS_PORT` | Default LMS server port |
 | `NCSB_PLAYER` | Default player name |
+
+
+## Config File
+
+Create `~/.config/ncsb/config.toml`:
+
+```toml
+[default]
+host = "sol"
+player = "juno"
+port = 9000
+```
+
+**Precedence** (highest to lowest):
+1. CLI arguments
+2. Environment variables
+3. Config file
+4. Built-in defaults
+
+Show current config: `ncsb config`
 
 
 ## Examples
