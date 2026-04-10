@@ -118,11 +118,11 @@ def resolve_player(server, player_name=None, mac=None):
 
 # --- CLI group ---
 
-@click.group()
-@click.option('--host', envvar='LMS_HOST', default='localhost', help='LMS server host')
-@click.option('--port', envvar='LMS_PORT', default=9000, type=int, help='LMS server port')
-@click.option('--player', envvar='NCSB_PLAYER', default=None, help='Player name')
-@click.option('--mac', default=None, help='Player MAC address')
+@click.group(context_settings={'help_option_names': ['-h', '--help']})
+@click.option('-H', '--host', envvar='LMS_HOST', default='localhost', help='LMS server host')
+@click.option('-p', '--port', envvar='LMS_PORT', default=9000, type=int, help='LMS server port')
+@click.option('-P', '--player', envvar='NCSB_PLAYER', default=None, help='Player name')
+@click.option('-m', '--mac', default=None, help='Player MAC address')
 @click.pass_context
 def cli(ctx, host, port, player, mac):
     """ncsb — Command-line interface to Lyrion Music Server."""

@@ -4,57 +4,121 @@
 ## Features
 
 - slick curses TUI to control your squeezeboxes / squeezelite
+- full-featured CLI for scripting and remote control
 - free-text and contextual search
 - current playlist management
 - player control
 - album art in sixel-compliant terminals (experimental, off by default)
-- regular crashes
 
 
-## Screenshot / screencast
+## Installation
 
-### players
+Requires Python 3.9+, with packages: hy, hyrule, requests, click.
 
-![players screen](screenshots/players.png)
-![playlist screen](screenshots/playlist.png)
-![another playlist screen](screenshots/playlist-2.png)
-![search screen](screenshots/search.png)
-![search results screen](screenshots/search_results.png)
+```
+$ pip install -e .
+```
+
+Or install from PyPI:
+```
+$ pip install ncsb
+```
+
+For optional cover art in terminal, also install libsixel-python and a sixel-supporting terminal (see below).
+
 
 ## Usage
 
-with dependencies available to your environment,
-```
-$ ncsb lms-server
-```
-where `lms-server` is the hostname or IP address of your LMS server.
+### CLI
 
-To use a port other than the default 9000, use the `--port` or `-p` optional argument,
+The unified `ncsb` command provides both TUI and CLI access:
+
 ```
-$ ncsb -p 9090 lms-server
+$ ncsb -H lms-server players
+$ ncsb -H lms-server -P juno info
+$ ncsb -H lms-server search miles --kind artists
+```
+
+**Global options:**
+- `-H, --host` — LMS server host (default: $LMS_HOST or localhost)
+- `-p, --port` — LMS server port (default: $LMS_PORT or 9000)
+- `-P, --player` — Player name (default: $NCSB_PLAYER)
+- `-m, --mac` — Player MAC address
+
+**Commands:**
+
+| Command | Description |
+|---------|-------------|
+| `tui` | Launch ncurses TUI |
+| `play`, `stop`, `pause` | Playback control |
+| `next`, `prev`, `seek`, `jump` | Track navigation |
+| `volume`, `vol+`, `vol-` | Volume control |
+| `power` | Power on/off |
+| `current` | Show playlist |
+| `shuffle`, `repeat` | Playlist modes |
+| `search`, `search-all` | Library search |
+| `load` | Load album/artist/track |
+| `info`, `playing`, `status` | Status display |
+| `players`, `serverstatus`, `version` | Server info |
+| `radio`, `sleep` | Radio and sleep timer |
+
+Per-command help: `ncsb search --help`
+
+### TUI
+
+```
+$ ncsb tui lms-server
 ```
 
 In any screen, press `?` for available commands.
 
 
-## Installation
+## Environment Variables
 
-Requires python 3 (tested on 3.9-12), with python packages requests, hy (>=1.0) and (for optional coverart) libsixel-python.
+| Variable | Description |
+|----------|-------------|
+| `LMS_HOST` | Default LMS server hostname |
+| `LMS_PORT` | Default LMS server port |
+| `NCSB_PLAYER` | Default player name |
 
-To install these with pip into your current environment (venv etc...),
+
+## Examples
+
+```bash
+# List players
+ncsb -H sol players
+
+# Show current track
+ncsb -H sol -P juno info
+
+# Search and play
+ncsb -H sol -P juno search kind of blue --kind albums
+ncsb -H sol -P juno load album 6468
+
+# Volume control
+ncsb -H sol -P juno volume 75
+ncsb -H sol -P juno vol+ 5
+
+# Play radio stream
+ncsb -H sol -P juno radio https://stream.example.com/mp3 --title "Jazz FM"
+
+# Set sleep timer
+ncsb -H sol -P juno sleep 30
+
+# JSON output for scripting
+ncsb -H sol -P juno playing --json
 ```
-$ pip install -r requirements.txt
-```
+
+
+## Sixel Terminal Support
 
 Incomplete list of sixel-supporting terminals [here](https://github.com/saitoha/libsixel#terminal-requirements)
 See also [foot](https://codeberg.org/dnkl/foot),
 patched gnome-terminal?,
-xterm launced with `xterm -ti vt340`
+xterm launched with `xterm -ti vt340`
 or with `xterm*decTerminalID : vt340` in `.Xresources`.
 
-
-If you are seeing boxes or junk instead of nice unicode symbols for play/pause etc, you need to use a font with more complete unicode support.
-Hack works well.
+If you are seeing boxes or junk instead of nice unicode symbols for play/pause etc, you need to use a font with more complete unicode support. Hack works well.
 
 In-terminal coverart requires libsixel to be installed on your system (presumably via your package manager) and a sixel-supporting terminal. Cover art notifications require libnotify to be installed.
 
@@ -65,18 +129,6 @@ In-terminal coverart requires libsixel to be installed on your system (presumabl
 - unable to write to top left of screen with curses when sixel image is displayed
 - album title text update can partially overwrite the cover art sixel image
 - because the font size and resolution is not known to curses, the album art size cannot be scaled to a terminal-appropriate size
-
-
-## Todo
-
-- play general URL (pasted in)
-- apps / podcast / menu
-- detailed track info
-- vim-style commands?
-- colour themes
-- use events instead of polling
-- fix screencast
-- scrolling when text is too wide for terminal
 
 
 ## Credits
