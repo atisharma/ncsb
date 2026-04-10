@@ -240,8 +240,30 @@ class PlayerWindow(QMainWindow):
         self._player_label.setVisible(player_visible)
         self.player_combo.setVisible(player_visible)
         
-        # Debounce art scaling (100ms delay)
-        self._resize_timer.start(100)
+        # Shrink play button when it's the only control
+        if controls_visible:
+            self.play_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #e94560;
+                    font-size: 14px;
+                    min-width: 28px;
+                    min-height: 28px;
+                }
+                QPushButton:hover { background-color: #ff6b6b; }
+            """)
+        else:
+            self.play_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #e94560;
+                    font-size: 12px;
+                    min-width: 22px;
+                    min-height: 22px;
+                }
+                QPushButton:hover { background-color: #ff6b6b; }
+            """)
+        
+        # Debounce art scaling (250ms delay)
+        self._resize_timer.start(250)
     
     def _scale_art(self):
         """Scale album art to fit available space."""
