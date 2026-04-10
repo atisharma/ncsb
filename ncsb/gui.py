@@ -26,7 +26,7 @@ class PlayerWindow(QMainWindow):
         self.player_name = player_name
         
         self.setWindowTitle("ncsb")
-        self.setMinimumSize(400, 500)
+        self.setMinimumSize(320, 420)
         self.setStyleSheet("""
             QMainWindow { background-color: #1a1a2e; }
             QLabel { color: #eaeaea; }
@@ -34,34 +34,35 @@ class PlayerWindow(QMainWindow):
                 background-color: #16213e;
                 color: #eaeaea;
                 border: none;
-                border-radius: 20px;
-                font-size: 24px;
-                min-width: 40px;
-                min-height: 40px;
+                border-radius: 14px;
+                font-size: 16px;
+                min-width: 28px;
+                min-height: 28px;
             }
             QPushButton:hover { background-color: #1f3460; }
             QPushButton:pressed { background-color: #0f3460; }
             QSlider::groove:horizontal {
                 background: #16213e;
-                height: 6px;
-                border-radius: 3px;
+                height: 4px;
+                border-radius: 2px;
             }
             QSlider::handle:horizontal {
                 background: #e94560;
-                width: 14px;
+                width: 12px;
                 margin: -4px 0;
-                border-radius: 7px;
+                border-radius: 6px;
             }
             QSlider::sub-page:horizontal {
                 background: #e94560;
-                border-radius: 3px;
+                border-radius: 2px;
             }
             QComboBox {
                 background-color: #16213e;
                 color: #eaeaea;
                 border: none;
-                padding: 5px 10px;
-                border-radius: 5px;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 11px;
             }
             QComboBox::drop-down { border: none; }
             QComboBox QAbstractItemView {
@@ -86,8 +87,8 @@ class PlayerWindow(QMainWindow):
         central = QWidget()
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
-        layout.setContentsMargins(30, 30, 30, 30)
-        layout.setSpacing(20)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(12)
         
         # Player selector
         player_layout = QHBoxLayout()
@@ -103,11 +104,11 @@ class PlayerWindow(QMainWindow):
         # Album art
         self.art_label = QLabel()
         self.art_label.setAlignment(Qt.AlignCenter)
-        self.art_label.setMinimumSize(300, 300)
+        self.art_label.setMinimumSize(200, 200)
         self.art_label.setStyleSheet("""
             QLabel {
                 background-color: #16213e;
-                border-radius: 10px;
+                border-radius: 8px;
             }
         """)
         layout.addWidget(self.art_label, alignment=Qt.AlignCenter)
@@ -115,13 +116,13 @@ class PlayerWindow(QMainWindow):
         # Track info
         self.title_label = QLabel("—")
         self.title_label.setAlignment(Qt.AlignCenter)
-        self.title_label.setFont(QFont("Sans", 16, QFont.Bold))
+        self.title_label.setFont(QFont("Sans", 13, QFont.Bold))
         self.title_label.setWordWrap(True)
         layout.addWidget(self.title_label)
         
         self.artist_label = QLabel("—")
         self.artist_label.setAlignment(Qt.AlignCenter)
-        self.artist_label.setFont(QFont("Sans", 12))
+        self.artist_label.setFont(QFont("Sans", 10))
         self.artist_label.setStyleSheet("color: #a0a0a0;")
         layout.addWidget(self.artist_label)
         
@@ -139,7 +140,7 @@ class PlayerWindow(QMainWindow):
         
         # Controls
         controls = QHBoxLayout()
-        controls.setSpacing(15)
+        controls.setSpacing(10)
         
         self.prev_btn = QPushButton("◀◀")
         self.prev_btn.clicked.connect(self._on_prev)
@@ -150,9 +151,9 @@ class PlayerWindow(QMainWindow):
         self.play_btn.setStyleSheet("""
             QPushButton {
                 background-color: #e94560;
-                font-size: 28px;
-                min-width: 60px;
-                min-height: 60px;
+                font-size: 18px;
+                min-width: 36px;
+                min-height: 36px;
             }
             QPushButton:hover { background-color: #ff6b6b; }
         """)
@@ -167,7 +168,7 @@ class PlayerWindow(QMainWindow):
         # Volume
         volume_layout = QHBoxLayout()
         vol_label = QLabel("🔊")
-        vol_label.setFont(QFont("Sans", 14))
+        vol_label.setFont(QFont("Sans", 12))
         self.volume_slider = QSlider(Qt.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(50)
@@ -274,14 +275,14 @@ class PlayerWindow(QMainWindow):
             import tempfile
             import requests
             
-            url = f"http://{self.server.ip}:{self.server.port}/music/{coverid}/cover_300x300.png"
+            url = f"http://{self.server.ip}:{self.server.port}/music/{coverid}/cover_200x200.png"
             resp = requests.get(url, timeout=5)
             if resp.ok:
                 pixmap = QPixmap()
                 pixmap.loadFromData(resp.content)
                 if not pixmap.isNull():
                     scaled = pixmap.scaled(
-                        280, 280,
+                        200, 200,
                         Qt.KeepAspectRatio,
                         Qt.SmoothTransformation
                     )
