@@ -183,7 +183,7 @@ def get_mac(ctx):
 @click.pass_context
 def cmd_tui(ctx, server, port):
     """Launch the ncurses TUI."""
-    from ncsb.main import main as tui_main
+    from ncsb.tui import main as tui_main
     host = server or ctx.obj['host']
     p = port or ctx.obj['port']
     tui_main(server_ip=host, port=p)
