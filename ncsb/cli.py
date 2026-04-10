@@ -101,7 +101,14 @@ def read_config():
     try:
         with open(CONFIG_FILE, 'rb') as f:
             config = tomllib.load(f)
-        return config.get('default', config.get('ncsb', {}))
+        # Support both [default] section and top-level keys
+        if 'default' in config:
+            return config['default']
+        elif 'ncsb' in config:
+            return config['ncsb']
+        else:
+            # Top-level keys without section
+            return config
     except Exception:
         return {}
 

@@ -88,10 +88,17 @@ In any screen, press `?` for available commands.
 Create `~/.config/ncsb/config.toml`:
 
 ```toml
-[default]
 host = "sol"
 player = "juno"
 port = 9000
+```
+
+Or with a section header:
+
+```toml
+[default]
+host = "sol"
+player = "juno"
 ```
 
 **Precedence** (highest to lowest):
