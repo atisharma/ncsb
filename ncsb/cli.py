@@ -189,6 +189,19 @@ def cmd_tui(ctx, server, port):
     tui_main(server_ip=host, port=p)
 
 
+@cli.command('gui')
+@click.pass_context
+def cmd_gui(ctx):
+    """Launch the GUI player."""
+    from ncsb.gui import main as gui_main
+    gui_main(
+        host=ctx.obj['host'],
+        port=ctx.obj['port'],
+        player=ctx.obj['player'],
+        mac=ctx.obj['mac']
+    )
+
+
 # --- Playback commands ---
 
 @cli.command()

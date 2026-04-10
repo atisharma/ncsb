@@ -4,6 +4,7 @@
 ## Features
 
 - slick curses TUI to control your squeezeboxes / squeezelite
+- minimal GUI with album art display (PySide6)
 - full-featured CLI for scripting and remote control
 - free-text and contextual search
 - current playlist management
@@ -26,8 +27,27 @@ $ pip install ncsb
 
 For optional cover art in terminal, also install libsixel-python and a sixel-supporting terminal (see below).
 
+For the GUI:
+```
+$ pip install ncsb[gui]
+```
+
 
 ## Usage
+
+### GUI
+
+```
+$ ncsb gui
+```
+
+Minimal Amberol-inspired player with:
+- Player selector dropdown
+- Album art display
+- Track info (title, artist)
+- Progress slider
+- Play/pause, prev/next controls
+- Volume slider
 
 ### CLI
 
@@ -49,6 +69,7 @@ $ ncsb -H lms-server search miles --kind artists
 
 | Command | Description |
 |---------|-------------|
+| `gui` | Launch GUI player |
 | `tui` | Launch ncurses TUI |
 | `play`, `stop`, `pause` | Playback control |
 | `next`, `prev`, `seek`, `jump` | Track navigation |
