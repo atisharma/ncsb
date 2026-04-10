@@ -5,6 +5,7 @@ Amberol-inspired: album art centric, clean, simple.
 Responsive: resize window to progressively hide/show controls.
 """
 import sys
+import os
 from pathlib import Path
 
 from PySide6.QtWidgets import (
@@ -262,8 +263,10 @@ class PlayerWindow(QMainWindow):
                 QPushButton:hover { background-color: #ff6b6b; }
             """)
         
-        # Debounce art scaling (250ms delay)
-        self._resize_timer.start(250)
+        # Debounce art scaling - configurable via NCSB_RESIZE_DEBOUNCE_MS env var
+        # Default 500ms means scale only after resize finishes
+        debounce_ms = int(os.environ.get('NCSB_RESIZE_DEBOUNCE_MS', 500))
+        self._resize_timer.start(debounce_ms)
     
     def _scale_art(self):
         """Scale album art to fit available space."""
