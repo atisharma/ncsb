@@ -494,6 +494,7 @@ def main(host='localhost', port=9000, player=None, mac=None):
     """Launch the GUI."""
     app = QApplication(sys.argv)
     app.setApplicationName("ncsb")
+    app.setDesktopFileName("ncsb")
     
     server = lms.Server(host, port)
     window = PlayerWindow(server, mac=mac, player_name=player)
