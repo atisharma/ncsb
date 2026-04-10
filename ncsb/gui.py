@@ -35,7 +35,7 @@ class PlayerWindow(QMainWindow):
         
         self.setWindowTitle("ncsb")
         self.setMinimumSize(160, 120)
-        self.resize(220, 300)
+        self.resize(220, 240)
         self.setStyleSheet("""
             QMainWindow { background-color: #1a1a2e; }
             QLabel { color: #eaeaea; }
