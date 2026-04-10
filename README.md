@@ -93,14 +93,6 @@ player = "juno"
 port = 9000
 ```
 
-Or with a section header:
-
-```toml
-[default]
-host = "sol"
-player = "juno"
-```
-
 **Precedence** (highest to lowest):
 1. CLI arguments
 2. Environment variables

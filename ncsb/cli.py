@@ -65,7 +65,6 @@ Global options:
 Config file:
     ~/.config/ncsb/config.toml
     
-    [default]
     host = "sol"
     player = "juno"
     port = 9000
@@ -100,15 +99,7 @@ def read_config():
     
     try:
         with open(CONFIG_FILE, 'rb') as f:
-            config = tomllib.load(f)
-        # Support both [default] section and top-level keys
-        if 'default' in config:
-            return config['default']
-        elif 'ncsb' in config:
-            return config['ncsb']
-        else:
-            # Top-level keys without section
-            return config
+            return tomllib.load(f)
     except Exception:
         return {}
 
