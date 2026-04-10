@@ -2,13 +2,14 @@
 """ncsb-gui — A minimal GUI for Lyrion Music Server.
 
 Amberol-inspired: album art centric, clean, simple.
+Responsive: resize window to progressively hide/show controls.
 """
 import sys
 from pathlib import Path
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QSlider, QFrame, QComboBox
+    QLabel, QPushButton, QSlider, QFrame, QComboBox, QSizePolicy
 )
 from PySide6.QtCore import Qt, QTimer, QSize
 from PySide6.QtGui import QPixmap, QFont
@@ -17,16 +18,24 @@ from ncsb import lms_controller as lms
 
 
 class PlayerWindow(QMainWindow):
-    """Main player window."""
+    """Main player window with responsive layout."""
+    
+    # Height thresholds for progressive hiding
+    THRESHOLD_VOLUME = 280
+    THRESHOLD_CONTROLS = 240
+    THRESHOLD_PROGRESS = 200
+    THRESHOLD_ARTIST = 170
     
     def __init__(self, server, mac=None, player_name=None):
         super().__init__()
         self.server = server
         self.mac = mac
         self.player_name = player_name
+        self._current_pixmap = None  # Store original pixmap for scaling
         
         self.setWindowTitle("ncsb")
-        self.setMinimumSize(220, 300)
+        self.setMinimumSize(160, 120)
+        self.resize(220, 300)
         self.setStyleSheet("""
             QMainWindow { background-color: #1a1a2e; }
             QLabel { color: #eaeaea; }
@@ -76,10 +85,6 @@ class PlayerWindow(QMainWindow):
         self._setup_ui()
         self._resolve_player()
         
-        # Compact mode (minimal UI)
-        self._compact_mode = False
-        self._toggle_elements = []  # Populated after UI setup
-        
         # Poll for updates
         self.timer = QTimer()
         self.timer.timeout.connect(self._update_state)
@@ -91,75 +96,72 @@ class PlayerWindow(QMainWindow):
         """Create the UI layout."""
         central = QWidget()
         self.setCentralWidget(central)
-        layout = QVBoxLayout(central)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
+        self._layout = QVBoxLayout(central)
+        self._layout.setContentsMargins(12, 12, 12, 12)
+        self._layout.setSpacing(6)
         
         # Player selector
-        player_layout = QHBoxLayout()
+        self._player_row = QHBoxLayout()
         player_label = QLabel("Player:")
         player_label.setFont(QFont("Sans", 10))
         self.player_combo = QComboBox()
         self.player_combo.currentTextChanged.connect(self._on_player_changed)
-        player_layout.addWidget(player_label)
-        player_layout.addWidget(self.player_combo)
-        player_layout.addStretch()
-        layout.addLayout(player_layout)
+        self._player_row.addWidget(player_label)
+        self._player_row.addWidget(self.player_combo)
+        self._player_row.addStretch()
+        self._layout.addLayout(self._player_row)
         
-        # Album art
+        # Album art - scalable
         self.art_label = QLabel()
         self.art_label.setAlignment(Qt.AlignCenter)
-        self.art_label.setFixedSize(140, 140)
-        self.art_label.setScaledContents(False)
+        self.art_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.art_label.setMinimumSize(80, 80)
         self.art_label.setStyleSheet("""
             QLabel {
                 background-color: #16213e;
                 border-radius: 6px;
             }
         """)
-        self.art_label.mousePressEvent = lambda e: self._toggle_compact()
-        layout.addWidget(self.art_label, alignment=Qt.AlignCenter)
+        self._layout.addWidget(self.art_label, alignment=Qt.AlignCenter, stretch=1)
         
         # Track info
         self.title_label = QLabel("—")
         self.title_label.setAlignment(Qt.AlignCenter)
         self.title_label.setFont(QFont("Sans", 11, QFont.Bold))
         self.title_label.setWordWrap(True)
-        self.title_label.setMaximumWidth(200)
-        layout.addWidget(self.title_label)
+        self._layout.addWidget(self.title_label)
         
         self.artist_label = QLabel("—")
         self.artist_label.setAlignment(Qt.AlignCenter)
         self.artist_label.setFont(QFont("Sans", 9))
         self.artist_label.setStyleSheet("color: #a0a0a0;")
         self.artist_label.setWordWrap(True)
-        self.artist_label.setMaximumWidth(200)
-        layout.addWidget(self.artist_label)
+        self._layout.addWidget(self.artist_label)
         
         # Progress
         self.progress_slider = QSlider(Qt.Horizontal)
         self.progress_slider.setRange(0, 1000)
         self.progress_slider.setValue(0)
         self.progress_slider.sliderMoved.connect(self._on_seek)
-        layout.addWidget(self.progress_slider)
+        self._layout.addWidget(self.progress_slider)
         
         self.time_label = QLabel("0:00 / 0:00")
         self.time_label.setAlignment(Qt.AlignCenter)
         self.time_label.setStyleSheet("color: #707070; font-size: 11px;")
-        layout.addWidget(self.time_label)
+        self._layout.addWidget(self.time_label)
         
         # Controls
-        controls = QHBoxLayout()
-        controls.setSpacing(6)
+        self._controls_row = QHBoxLayout()
+        self._controls_row.setSpacing(6)
         
-        self.shuffle_btn = QPushButton("🔀")
+        self.shuffle_btn = QPushButton("S")
         self.shuffle_btn.setCheckable(True)
         self.shuffle_btn.clicked.connect(self._on_shuffle)
-        controls.addWidget(self.shuffle_btn)
+        self._controls_row.addWidget(self.shuffle_btn)
         
-        self.prev_btn = QPushButton("◀◀")
+        self.prev_btn = QPushButton("◀")
         self.prev_btn.clicked.connect(self._on_prev)
-        controls.addWidget(self.prev_btn)
+        self._controls_row.addWidget(self.prev_btn)
         
         self.play_btn = QPushButton("▶")
         self.play_btn.clicked.connect(self._on_play_pause)
@@ -172,42 +174,105 @@ class PlayerWindow(QMainWindow):
             }
             QPushButton:hover { background-color: #ff6b6b; }
         """)
-        controls.addWidget(self.play_btn)
+        self._controls_row.addWidget(self.play_btn)
         
-        self.next_btn = QPushButton("▶▶")
+        self.next_btn = QPushButton("▶")
         self.next_btn.clicked.connect(self._on_next)
-        controls.addWidget(self.next_btn)
+        self._controls_row.addWidget(self.next_btn)
         
-        self.repeat_btn = QPushButton("🔁")
+        self.repeat_btn = QPushButton("R")
         self.repeat_btn.setCheckable(True)
         self.repeat_btn.clicked.connect(self._on_repeat)
-        controls.addWidget(self.repeat_btn)
+        self._controls_row.addWidget(self.repeat_btn)
         
-        layout.addLayout(controls)
+        self._layout.addLayout(self._controls_row)
         
         # Volume
-        volume_layout = QHBoxLayout()
-        vol_label = QLabel("🔊")
+        self._volume_row = QHBoxLayout()
+        vol_label = QLabel("V")
         vol_label.setFont(QFont("Sans", 10))
         self.volume_slider = QSlider(Qt.Horizontal)
         self.volume_slider.setRange(0, 100)
         self.volume_slider.setValue(50)
         self.volume_slider.sliderMoved.connect(self._on_volume)
-        volume_layout.addWidget(vol_label)
-        volume_layout.addWidget(self.volume_slider)
-        layout.addLayout(volume_layout)
+        self._volume_row.addWidget(vol_label)
+        self._volume_row.addWidget(self.volume_slider)
+        self._layout.addLayout(self._volume_row)
         
-        # Elements to hide in compact mode
-        self._toggle_elements = [
-            player_label,
-            self.player_combo,
-            self.shuffle_btn,
-            self.prev_btn,
-            self.next_btn,
-            self.repeat_btn,
-            self.volume_slider,
-            vol_label,
-        ]
+        # Store references for visibility toggling
+        self._vol_label = vol_label
+        self._player_label = player_label
+    
+    def resizeEvent(self, event):
+        """Handle window resize - progressive hide/show elements."""
+        super().resizeEvent(event)
+        h = self.height()
+        
+        # Progressive visibility from bottom up
+        # Volume row
+        vol_visible = h >= self.THRESHOLD_VOLUME
+        self._vol_label.setVisible(vol_visible)
+        self.volume_slider.setVisible(vol_visible)
+        
+        # Controls row (shuffle, prev, next, repeat - keep play always)
+        controls_visible = h >= self.THRESHOLD_CONTROLS
+        self.shuffle_btn.setVisible(controls_visible)
+        self.prev_btn.setVisible(controls_visible)
+        self.next_btn.setVisible(controls_visible)
+        self.repeat_btn.setVisible(controls_visible)
+        
+        # Progress slider and time
+        progress_visible = h >= self.THRESHOLD_PROGRESS
+        self.progress_slider.setVisible(progress_visible)
+        self.time_label.setVisible(progress_visible)
+        
+        # Artist label
+        artist_visible = h >= self.THRESHOLD_ARTIST
+        self.artist_label.setVisible(artist_visible)
+        
+        # Player selector - hide when very small
+        player_visible = h >= self.THRESHOLD_VOLUME
+        self._player_label.setVisible(player_visible)
+        self.player_combo.setVisible(player_visible)
+        
+        # Scale album art
+        self._scale_art()
+    
+    def _scale_art(self):
+        """Scale album art to fit available space."""
+        if not self._current_pixmap or self._current_pixmap.isNull():
+            return
+        
+        # Calculate available space for art
+        # Subtract margins, title, and other visible elements
+        h = self.height()
+        used_height = 24  # margins
+        
+        if self.player_combo.isVisible():
+            used_height += 24
+        if self.title_label.isVisible():
+            used_height += 20
+        if self.artist_label.isVisible():
+            used_height += 16
+        if self.progress_slider.isVisible():
+            used_height += 20
+        if self.time_label.isVisible():
+            used_height += 16
+        if self._controls_row.geometry().height() > 0 or self.play_btn.isVisible():
+            used_height += 32
+        if self.volume_slider.isVisible():
+            used_height += 24
+        
+        available = max(80, h - used_height - 12)
+        size = min(available, self.width() - 24)
+        size = max(80, size)
+        
+        scaled = self._current_pixmap.scaled(
+            size, size,
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation
+        )
+        self.art_label.setPixmap(scaled)
     
     def _resolve_player(self):
         """Resolve player and populate combo box."""
@@ -273,10 +338,12 @@ class PlayerWindow(QMainWindow):
                 if coverid:
                     self._load_coverart(coverid)
                 else:
+                    self._current_pixmap = None
                     self.art_label.clear()
             else:
                 self.title_label.setText("—")
                 self.artist_label.setText("—")
+                self._current_pixmap = None
                 self.art_label.clear()
             
             # Progress
@@ -304,43 +371,25 @@ class PlayerWindow(QMainWindow):
             self.shuffle_btn.setChecked(shuffle > 0)
             self.repeat_btn.setChecked(repeat > 0)
             
-            # Update button text based on mode
-            if shuffle == 2:
-                self.shuffle_btn.setText("🔀a")
-            elif shuffle == 1:
-                self.shuffle_btn.setText("🔀")
-            else:
-                self.shuffle_btn.setText("🔀")
-            
-            if repeat == 2:
-                self.repeat_btn.setText("🔁")
-            elif repeat == 1:
-                self.repeat_btn.setText("🔂")
-            else:
-                self.repeat_btn.setText("🔁")
-            
         except Exception as e:
             print(f"Error updating state: {e}")
     
     def _load_coverart(self, coverid):
         """Load cover art from LMS server."""
         try:
-            import tempfile
             import requests
             
-            url = f"http://{self.server.ip}:{self.server.port}/music/{coverid}/cover_140x140.png"
+            # Fetch larger image for scaling
+            url = f"http://{self.server.ip}:{self.server.port}/music/{coverid}/cover_300x300.png"
             resp = requests.get(url, timeout=5)
             if resp.ok:
                 pixmap = QPixmap()
                 pixmap.loadFromData(resp.content)
                 if not pixmap.isNull():
-                    scaled = pixmap.scaled(
-                        140, 140,
-                        Qt.KeepAspectRatio,
-                        Qt.SmoothTransformation
-                    )
-                    self.art_label.setPixmap(scaled)
+                    self._current_pixmap = pixmap
+                    self._scale_art()
         except Exception:
+            self._current_pixmap = None
             self.art_label.clear()
     
     def _fmt_time(self, seconds):
@@ -391,7 +440,6 @@ class PlayerWindow(QMainWindow):
         try:
             status = lms.status(self.server, self.mac)
             current = int(status.get('playlist shuffle', 0) or 0)
-            # Cycle: 0 -> 1 -> 2 -> 0
             new_val = (current + 1) % 3
             lms.playlist_shuffle(self.server, self.mac, new_val)
             self._update_state()
@@ -405,25 +453,11 @@ class PlayerWindow(QMainWindow):
         try:
             status = lms.status(self.server, self.mac)
             current = int(status.get('playlist repeat', 0) or 0)
-            # Cycle: 0 -> 1 -> 2 -> 0
             new_val = (current + 1) % 3
             lms.playlist_repeat(self.server, self.mac, new_val)
             self._update_state()
         except Exception:
             pass
-    
-    def _toggle_compact(self):
-        """Toggle compact mode (hide controls)."""
-        self._compact_mode = not self._compact_mode
-        for widget in self._toggle_elements:
-            widget.setVisible(not self._compact_mode)
-        # Adjust window size
-        if self._compact_mode:
-            self.setMinimumSize(220, 200)
-            self.resize(220, 200)
-        else:
-            self.setMinimumSize(220, 300)
-            self.resize(220, 300)
 
 
 def main(host='localhost', port=9000, player=None, mac=None):
