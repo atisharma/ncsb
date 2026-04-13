@@ -127,27 +127,27 @@ Show current config: `ncsb config`
 
 ```bash
 # List players
-ncsb -H sol players
+ncsb players
 
 # Show current track
-ncsb -H sol -P juno info
+ncsb -P juno info
 
 # Search and play
-ncsb -H sol -P juno search kind of blue --kind albums
-ncsb -H sol -P juno load album 6468
+ncsb -P juno search kind of blue --kind albums
+ncsb -P juno load album 6468
 
 # Volume control
-ncsb -H sol -P juno volume 75
-ncsb -H sol -P juno vol+ 5
+ncsb -P juno volume 75
+ncsb -P juno vol+ 5
 
 # Play radio stream
-ncsb -H sol -P juno radio https://stream.example.com/mp3 --title "Jazz FM"
+ncsb -P juno radio https://stream.example.com/mp3 --title "Jazz FM"
 
 # Set sleep timer
-ncsb -H sol -P juno sleep 30
+ncsb -P juno sleep 30
 
 # JSON output for scripting
-ncsb -H sol -P juno playing --json
+ncsb -P juno playing --json
 ```
 
 
@@ -184,7 +184,7 @@ ncsb-notifyd juno &
 NCSB_PLAYER=eos POLL_INTERVAL=3 ncsb-notifyd
 ```
 
-The daemon polls LMS every 2 seconds (configurable via `POLL_INTERVAL`) and sends `notify-send` with album art when the track or playback state changes.
+The daemon uses ncsb's config/env handling for host and port. It polls every 2 seconds (configurable via `POLL_INTERVAL`) and sends `notify-send` with album art when the track or playback state changes.
 
 A sample script is available in `contrib/ncsb-notifyd.sh`.
 

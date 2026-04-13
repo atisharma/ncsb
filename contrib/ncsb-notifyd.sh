@@ -8,17 +8,15 @@
 #   ncsb-notifyd [PLAYER]
 #   NCSB_PLAYER=eos ncsb-notifyd
 #
+# Config: Uses ncsb's config/env handling (see: ncsb config)
+#
 # Environment:
-#   NCSB_PLAYER  - Player name (default: eos)
-#   LMS_HOST     - LMS server host (default: sol.wg.letterbox.pw)
-#   LMS_PORT     - LMS server port (default: 9000)
-#   POLL_INTERVAL - Polling interval in seconds (default: 2)
+#   NCSB_PLAYER    - Player name (default: from config)
+#   POLL_INTERVAL  - Polling interval in seconds (default: 2)
 
 set -euo pipefail
 
-PLAYER="${1:-${NCSB_PLAYER:-eos}}"
-HOST="${LMS_HOST:-sol.wg.letterbox.pw}"
-PORT="${LMS_PORT:-9000}"
+PLAYER="${1:-${NCSB_PLAYER:-}}"
 POLL_INTERVAL="${POLL_INTERVAL:-2}"
 
 # State tracking
@@ -33,8 +31,14 @@ fetch_cover() {
     local coverid="$1"
     local cover_file="/tmp/ncsb-cover-$coverid.jpg"
     
+    # Get host from ncsb config
+    local host
+    host=$(ncsb config 2>/dev/null | grep "^  host:" | cut -d: -f2- | xargs) || host="localhost"
+    local port
+    port=$(ncsb config 2>/dev/null | grep "^  port:" | cut -d: -f2- | xargs) || port="9000"
+    
     if [ -n "$coverid" ] && [ ! -f "$cover_file" ]; then
-        curl -s "http://$HOST:$PORT/music/$coverid/cover.jpg" -o "$cover_file" 2>/dev/null || true
+        curl -s "http://$host:$port/music/$coverid/cover.jpg" -o "$cover_file" 2>/dev/null || true
     fi
     
     echo "$cover_file"
@@ -68,8 +72,11 @@ send_notification() {
 }
 
 poll() {
+    local cmd_args=()
+    [ -n "$PLAYER" ] && cmd_args=(-P "$PLAYER")
+    
     local status
-    status=$(ncsb -P "$PLAYER" status 2>/dev/null) || return 0
+    status=$(ncsb "${cmd_args[@]}" status 2>/dev/null) || return 0
     
     local track_id mode title album artist coverid
     track_id=$(echo "$status" | jq -r '.playlist_loop[0].id // empty')
@@ -92,7 +99,7 @@ poll() {
 }
 
 # Main loop
-log "Starting ncsb-notifyd for player: $PLAYER (poll: ${POLL_INTERVAL}s)"
+log "Starting ncsb-notifyd${PLAYER:+ for player: $PLAYER} (poll: ${POLL_INTERVAL}s)"
 
 while true; do
     poll
