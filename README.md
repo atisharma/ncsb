@@ -172,6 +172,23 @@ In-terminal coverart requires libsixel to be installed on your system (presumabl
 - because the font size and resolution is not known to curses, the album art size cannot be scaled to a terminal-appropriate size
 
 
+## Desktop Notifications
+
+To get desktop notifications when the track changes, use the notify daemon:
+
+```bash
+# Run in background (requires ncsb, jq, notify-send, curl)
+ncsb-notifyd juno &
+
+# Or with environment variables
+NCSB_PLAYER=eos POLL_INTERVAL=3 ncsb-notifyd
+```
+
+The daemon polls LMS every 2 seconds (configurable via `POLL_INTERVAL`) and sends `notify-send` with album art when the track or playback state changes.
+
+A sample script is available in `contrib/ncsb-notifyd.sh`.
+
+
 ## Credits
 
 Copyright A S Sharma (2021), released under the GPL v3.0 (see LICENSE and AUTHORS).
