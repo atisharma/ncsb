@@ -89,7 +89,17 @@ CONFIG_FILE = Path.home() / '.config' / 'ncsb' / 'config.toml'
 
 
 def read_config():
-    """Read config file and return defaults dict for click."""
+    """Read config file and return defaults dict for click.
+    
+    Supports both flat config and [default] section:
+        host = "sol"
+        player = "juno"
+    
+    or:
+        [default]
+        host = "sol"
+        player = "juno"
+    """
     if not CONFIG_FILE.exists():
         return {}
     try:
@@ -99,7 +109,9 @@ def read_config():
     
     try:
         with open(CONFIG_FILE, 'rb') as f:
-            return tomllib.load(f)
+            cfg = tomllib.load(f)
+        # Support [default] section or flat config
+        return cfg.get('default', cfg)
     except Exception:
         return {}
 
