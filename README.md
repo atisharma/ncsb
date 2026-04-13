@@ -151,6 +151,41 @@ ncsb -H sol -P juno playing --json
 ```
 
 
+## Desktop Notifications
+
+A notification daemon script is provided in `contrib/ncsb-notifyd.sh`. It polls LMS and sends desktop notifications with album art when the track or playback state changes.
+
+### Requirements
+
+- `ncsb` installed and configured
+- `jq` for JSON parsing
+- `notify-send` (libnotify) or compatible notification daemon (mako, dunst, etc.)
+- `curl` for fetching album art
+
+### Usage
+
+```bash
+# Run in background with default player
+./contrib/ncsb-notifyd.sh &
+
+# Specify player
+./contrib/ncsb-notifyd.sh juno &
+
+# Or via environment variable
+NCSB_PLAYER=eos ./contrib/ncsb-notifyd.sh
+```
+
+### Configuration
+
+| Environment Variable | Description | Default |
+|---------------------|-------------|---------|
+| `NCSB_PLAYER` | Player name to monitor | From ncsb config |
+| `POLL_INTERVAL` | Polling interval in seconds | 2 |
+| `NOTIFY_TIMEOUT` | Notification timeout in seconds | 5 |
+
+The script respects ncsb's config file and environment variable precedence (see `ncsb config`).
+
+
 ## Sixel Terminal Support
 
 Incomplete list of sixel-supporting terminals [here](https://github.com/saitoha/libsixel#terminal-requirements)
